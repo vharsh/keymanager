@@ -15,6 +15,7 @@ import io.mosip.kernel.keymanagerservice.logger.KeymanagerLogger;
 import io.mosip.kernel.keymanagerservice.service.KeymanagerService;
 import io.mosip.kernel.zkcryptoservice.constant.ZKCryptoManagerConstants;
 import org.apache.commons.io.FileUtils;
+import org.springframework.context.ApplicationContext;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -53,7 +54,7 @@ class LocalClientCryptoServiceImpl implements ClientCryptoService {
 
     private static SecureRandom secureRandom = null;
     protected static CryptoCoreSpec<byte[], byte[], SecretKey, PublicKey, PrivateKey, String> cryptoCore;
-    private KeymanagerService keymanagerService;
+    private ApplicationContext applicationContext;
     private Boolean useResidentServiceModuleKey;
     private String residentServiceAppId;
 
@@ -64,7 +65,7 @@ class LocalClientCryptoServiceImpl implements ClientCryptoService {
      * @throws Throwable
      */
     LocalClientCryptoServiceImpl(@NotNull CryptoCoreSpec<byte[], byte[], SecretKey, PublicKey, PrivateKey, String> cryptoCoreImpl, 
-            @NotNull KeymanagerService keymanagerServiceImpl, Boolean useResidentServiceModuleKey, String residentServiceAppId)
+            @NotNull ApplicationContext applicationContext, Boolean useResidentServiceModuleKey, String residentServiceAppId)
             throws  Throwable {
         LOGGER.info(ClientCryptoManagerConstant.SESSIONID, ClientCryptoManagerConstant.NON_TPM,
                 ClientCryptoManagerConstant.EMPTY, "Getting the instance of NON_TPM Security");
@@ -92,7 +93,7 @@ class LocalClientCryptoServiceImpl implements ClientCryptoService {
 
         //set cryptoCore
         cryptoCore = cryptoCoreImpl;
-        keymanagerService = keymanagerServiceImpl;
+        this.applicationContext = applicationContext;
         this.useResidentServiceModuleKey = useResidentServiceModuleKey;
         this.residentServiceAppId = residentServiceAppId;
     }
@@ -297,8 +298,9 @@ class LocalClientCryptoServiceImpl implements ClientCryptoService {
     }
 
     private CertificateEntry<X509Certificate, PrivateKey> getResidentCertificateEntry() {
-        SignatureCertificate certificateResponse = keymanagerService.getSignatureCertificate(
-            residentServiceAppId, Optional.empty(), DateUtils.getUTCCurrentDateTimeString());
+        SignatureCertificate certificateResponse = applicationContext.getBean(KeymanagerService.class)
+            .getSignatureCertificate(residentServiceAppId, Optional.empty(), 
+                DateUtils.getUTCCurrentDateTimeString());
         return certificateResponse.getCertificateEntry();
     }
 
