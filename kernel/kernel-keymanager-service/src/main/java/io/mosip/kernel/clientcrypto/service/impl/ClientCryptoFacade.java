@@ -8,9 +8,9 @@ import io.mosip.kernel.core.crypto.spi.CryptoCoreSpec;
 import io.mosip.kernel.core.exception.ExceptionUtils;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.keymanagerservice.logger.KeymanagerLogger;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import tss.tpm.TPMT_PUBLIC;
@@ -37,6 +37,15 @@ public class ClientCryptoFacade {
 
     @Autowired
     private Environment environment;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Value("${mosip.kernel.client.crypto.use-resident-service-module-key:false}")
+    private Boolean useResidentServiceModuleKey;
+
+    @Value("${mosip.kernel.client.crypto.resident-service-app-id:RESIDENT}")
+    private String residentServiceAppId;
 
     @Value("${mosip.kernel.client.crypto.iv-length:12}")
     private int ivLength;
@@ -68,7 +77,8 @@ public class ClientCryptoFacade {
             try {
                 LOGGER.warn(ClientCryptoManagerConstant.SESSIONID, ClientCryptoManagerConstant.INITIALIZATION, ClientCryptoManagerConstant.EMPTY,
                         "USING LOCAL CLIENT SECURITY INITIALIZED, IGNORE IF THIS IS NON-PROD ENV");
-                clientCryptoService = new LocalClientCryptoServiceImpl(cryptoCore);
+                clientCryptoService = new LocalClientCryptoServiceImpl(cryptoCore, applicationContext,
+                    useResidentServiceModuleKey, residentServiceAppId);
             } catch (Throwable ex) {
                 LOGGER.error(ClientCryptoManagerConstant.SESSIONID, ClientCryptoManagerConstant.INITIALIZATION,
                         ClientCryptoManagerConstant.EMPTY, ExceptionUtils.getStackTrace(ex));
