@@ -37,6 +37,7 @@ import io.mosip.kernel.cryptomanager.constant.CryptomanagerConstant;
 import io.mosip.kernel.cryptomanager.constant.CryptomanagerErrorCode;
 import io.mosip.kernel.cryptomanager.dto.CryptomanagerRequestDto;
 import io.mosip.kernel.cryptomanager.exception.CryptoManagerSerivceException;
+import io.mosip.kernel.keymanagerservice.constant.KeymanagerConstant;
 import io.mosip.kernel.keymanagerservice.dto.SymmetricKeyRequestDto;
 import io.mosip.kernel.keymanagerservice.entity.KeyPolicy;
 import io.mosip.kernel.keymanagerservice.helper.KeymanagerDBHelper;
@@ -259,6 +260,10 @@ public class CryptomanagerUtils {
 	}
 
 	public boolean hasKeyAccess(String applicationId) {
+		if(Objects.isNull(applicationId) || applicationId.equals(KeymanagerConstant.EMPTY)) {
+			return true;
+		}
+		
 		Optional<KeyPolicy> keyPolicy = dbHelper.getKeyPolicyFromCache(applicationId);
 		if(!keyPolicy.isPresent()) // not allowing decryption if not key policy found
 			return false;
