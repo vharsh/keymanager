@@ -1,6 +1,7 @@
 package io.mosip.kernel.keygenerator.generator;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -77,11 +78,8 @@ public class KeysGenerator {
     @Value("${mosip.kernel.keymanager.certificate.default.country}")
     private String country;
 
-    @Value("${mosip.kernel.keymanager.autogen.basekeys.list}")
+    @Value("${mosip.kernel.keymanager.autogen.basekeys.list:}")
     private String baseKeys;
-
-    @Autowired
-    private KeyAliasRepository keyAliasRepository;
 
     @Autowired
     KeymanagerService keymanagerService;
@@ -91,11 +89,12 @@ public class KeysGenerator {
 
     public void generateKeys() throws Exception {
 
-        String rootKeyAlias = getKeyAlias(ROOT_APP_ID, BLANK_REF_ID);
-        if (Objects.isNull(rootKeyAlias)) {
-            generateMasterKey(ROOT_APP_ID, BLANK_REF_ID, rootCommonName);
-            LOGGER.info("Generated ROOT Key.");
-        }
+        // Not required to check for key exists or not, because keymanager is checking key exists before generating new key.
+        //String rootKeyAlias = getKeyAlias(ROOT_APP_ID, BLANK_REF_ID);
+        //if (Objects.isNull(rootKeyAlias)) {
+        generateMasterKey(ROOT_APP_ID, BLANK_REF_ID, rootCommonName);
+        LOGGER.info("Generated ROOT Key.");
+        //}
 
         List<String> keyAppIdsList = getListKeys();
         keyAppIdsList.forEach(appId -> {
@@ -109,15 +108,17 @@ public class KeysGenerator {
             }
             if (referenceId.equalsIgnoreCase(IDENTITY_CACHE_REF_ID)) {
                 randomKeysGenerator.generateRandomKeys(applicationId, referenceId);
-                LOGGER.info("Generated Cache Key & Random Keys.");
+                LOGGER.info("Generated Identity Cache Key & ZK Random Keys(10K).");
             } else {
-                String masterKeyAlias = getKeyAlias(applicationId, referenceId);
+                /* String masterKeyAlias = getKeyAlias(applicationId, referenceId);
                 if(Objects.isNull(masterKeyAlias)) {
                     generateMasterKey(applicationId, referenceId, commonName);
                     LOGGER.info("Generated Master Key for Application ID & ReferenceId: " + appId);
                 } else {
                     LOGGER.info("Master Key Already exists for Application ID & ReferenceId: " + appId);
-                }
+                } */
+                generateMasterKey(applicationId, referenceId, commonName);
+                LOGGER.info("Generated Master Key for Application ID & ReferenceId: " + appId);
             }
         });
 
@@ -130,7 +131,7 @@ public class KeysGenerator {
                 String referenceId = strArr[1];
                 if (referenceId.length() != 0) {
                     generateBaseKey(applicationId, referenceId);
-                    LOGGER.info("Base Key Successful. AppId: " +  applicationId + ", refId: " + referenceId);
+                    LOGGER.info("Base Key Generation Successful. AppId: " +  applicationId + ", refId: " + referenceId);
                 } else {
                     LOGGER.warning("Configured Reference Id is not valid. Configured value: " + appId);
                 }
@@ -140,18 +141,23 @@ public class KeysGenerator {
         });
     }
 
+    
     private List<String> getListKeys() {
-         return Stream.of(appIdsList.split(",")).map(String::trim)
+        return Stream.of(appIdsList.split(",")).map(String::trim)
                 .filter(appId -> !appId.equalsIgnoreCase(ROOT_APP_ID))
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("unchecked")
     private List<String> getBaseKeysList() {
+        if (Objects.isNull(baseKeys) || baseKeys.equals(""))
+            return Collections.EMPTY_LIST;
+
         return Stream.of(baseKeys.split(",")).map(String::trim)
                .collect(Collectors.toList());
    }
 
-    private String getKeyAlias(String applicationId, String referenceId) {
+    /* private String getKeyAlias(String applicationId, String referenceId) {
 		List<KeyAlias> keyAliases = keyAliasRepository.findByApplicationIdAndReferenceId(applicationId, referenceId)
                                     .stream().sorted((alias1, alias2) -> {
                                         return alias1.getKeyGenerationTime().compareTo(alias2.getKeyGenerationTime());
@@ -172,7 +178,7 @@ public class KeysGenerator {
 		return timeStamp.isEqual(keyAlias.getKeyGenerationTime()) || timeStamp.isEqual(keyAlias.getKeyExpiryTime())
 				|| timeStamp.isAfter(keyAlias.getKeyGenerationTime())
 						&& timeStamp.isBefore(keyAlias.getKeyExpiryTime());
-    }
+    } */
     
     private void generateMasterKey(String appId, String refId, String commonName){
         KeyPairGenerateRequestDto requestDto = new KeyPairGenerateRequestDto();

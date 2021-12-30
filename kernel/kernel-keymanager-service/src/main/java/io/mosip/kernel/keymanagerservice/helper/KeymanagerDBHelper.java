@@ -96,21 +96,25 @@ public class KeymanagerDBHelper {
         if (autoUpdate) {
             LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY, 
                         "Updating the thumbprint & key unique identifer completed.");
-            keyPolicyCache = new Cache2kBuilder<String, Optional<KeyPolicy>>() {}
-            // added hashcode because test case execution failing with IllegalStateException: Cache already created
-            .name("keyPolicyCache-" + this.hashCode()) 
-            .eternal(true)
-            .entryCapacity(20)
-            .loaderThreadCount(1)
-            .loader((keyPolicyName) -> {
-                    LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY, 
-                                "Fetching Key Policy for keyPolicyName(Cache): " + keyPolicyName);
-                    return keyPolicyRepository.findByApplicationId(keyPolicyName);
-            })
-            .build();
+            createCacheObject();
             addCertificateThumbprints();
             addKeyUniqueIdentifier();
         }
+    }
+
+    private void createCacheObject() {
+        keyPolicyCache = new Cache2kBuilder<String, Optional<KeyPolicy>>() {}
+        // added hashcode because test case execution failing with IllegalStateException: Cache already created
+        .name("keyPolicyCache-" + this.hashCode()) 
+        .eternal(true)
+        .entryCapacity(20)
+        .loaderThreadCount(1)
+        .loader((keyPolicyName) -> {
+                LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY, 
+                            "Fetching Key Policy for keyPolicyName(Cache): " + keyPolicyName);
+                return keyPolicyRepository.findByApplicationId(keyPolicyName);
+        })
+        .build();
     }
     
     /**
@@ -197,7 +201,7 @@ public class KeymanagerDBHelper {
     public LocalDateTime getExpiryPolicy(String applicationId, LocalDateTime timeStamp, List<KeyAlias> keyAlias) {
         LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.APPLICATIONID, applicationId,
                 KeymanagerConstant.GETEXPIRYPOLICY);
-        Optional<KeyPolicy> keyPolicy = keyPolicyCache.get(applicationId);
+        Optional<KeyPolicy> keyPolicy = getKeyPolicyFromCache(applicationId);
         if (!keyPolicy.isPresent()) {
             LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.KEYPOLICY, keyPolicy.toString(),
                     "Key Policy not found for this application Id. Throwing exception");
@@ -245,7 +249,7 @@ public class KeymanagerDBHelper {
     * @return KeyPolicy {@KeyPolicy}
     */
     public Optional<KeyPolicy> getKeyPolicy(String applicationId){
-        Optional<KeyPolicy> keyPolicy = keyPolicyCache.get(applicationId);
+        Optional<KeyPolicy> keyPolicy = getKeyPolicyFromCache(applicationId);
 		if (!keyPolicy.isPresent() || !keyPolicy.get().isActive()) {
 			LOGGER.error(KeymanagerConstant.SESSIONID, KeymanagerConstant.KEYPOLICY, keyPolicy.toString(),
 					"Key Policy not found for this application Id. Key/CSR generation not allowed.");
@@ -256,6 +260,10 @@ public class KeymanagerDBHelper {
     }
 
     public Optional<KeyPolicy> getKeyPolicyFromCache(String applicationId) {
+        // added because regClient uses the autoupdate flag as false.
+        if (Objects.isNull(keyPolicyCache)) {
+            createCacheObject();
+        }
         return keyPolicyCache.get(applicationId);
     }
 
@@ -266,6 +274,13 @@ public class KeymanagerDBHelper {
                             "key alias not found for the provided thumbprint, may be cert thumbprint is not updated. Adding thumbprint(s) now.");
             addCertificateThumbprints();
             keyAliases = keyAliasRepository.findByCertThumbprint(certThumbprint);
+        }
+        if (keyAliases.isEmpty()) {
+            // Still key not found after updating the thumbprints. So throwing exception.
+            LOGGER.error(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
+                    "no key alias found for the provided thumbprint after updating the thumbprints in DB.");
+            throw new KeymanagerServiceException(KeymanagerErrorConstant.KEY_NOT_FOUND_BY_THUMBPRINT.getErrorCode(),
+                    KeymanagerErrorConstant.KEY_NOT_FOUND_BY_THUMBPRINT.getErrorMessage());
         }
         // Mostly should fetch only one object from DB, so considering as first preference.
         String foundDBAppIdRefId = keyAliases.get(0).getApplicationId() + KeymanagerConstant.HYPHEN + keyAliases.get(0).getReferenceId();
@@ -340,7 +355,7 @@ public class KeymanagerDBHelper {
                                                 String certThumbprint = cryptomanagerUtil.getCertificateThumbprintInHex(x509Cert);
                                                 String uniqueValue = keyAlias.getApplicationId() + KeymanagerConstant.UNDER_SCORE + 
                                                                 keyAlias.getReferenceId() + KeymanagerConstant.UNDER_SCORE;
-                                                Optional<KeyPolicy> keyPolicy = keyPolicyCache.get(keyAlias.getApplicationId());
+                                                Optional<KeyPolicy> keyPolicy = getKeyPolicyFromCache(keyAlias.getApplicationId());
                                                 uniqueValue += keyPolicy.isPresent() ? 
                                                                keyAlias.getKeyGenerationTime().format(KeymanagerConstant.DATE_FORMATTER) :
                                                                certThumbprint;
@@ -385,7 +400,7 @@ public class KeymanagerDBHelper {
                                             if (keyFromDBStore.isPresent()) {
                                                 String uniqueValue = keyAlias.getApplicationId() + KeymanagerConstant.UNDER_SCORE + 
                                                                     keyAlias.getReferenceId() + KeymanagerConstant.UNDER_SCORE;
-                                                Optional<KeyPolicy> keyPolicy = keyPolicyCache.get(keyAlias.getApplicationId());
+                                                Optional<KeyPolicy> keyPolicy = getKeyPolicyFromCache(keyAlias.getApplicationId());
                                                 uniqueValue += keyPolicy.isPresent() ? 
                                                                 keyAlias.getKeyGenerationTime().format(KeymanagerConstant.DATE_FORMATTER) :
                                                                 keyAlias.getCertThumbprint();
@@ -406,7 +421,7 @@ public class KeymanagerDBHelper {
     }
 
     private int getPreExpireDays(String applicationId, String referenceId){
-        Optional<KeyPolicy> keyPolicy = keyPolicyCache.get(applicationId);
+        Optional<KeyPolicy> keyPolicy = getKeyPolicyFromCache(applicationId);
         if (!keyPolicy.isPresent()) {
             // key policy details not available, so not considering any pre expire days 
             return 0;
@@ -418,7 +433,7 @@ public class KeymanagerDBHelper {
             return keyPolicy.get().getPreExpireDays();
         }
         // finally, considering key policy for encryption keys.
-        Optional<KeyPolicy> encKeyPolicy = keyPolicyCache.get(KeymanagerConstant.BASE_KEY_POLICY_CONST);
+        Optional<KeyPolicy> encKeyPolicy = getKeyPolicyFromCache(KeymanagerConstant.BASE_KEY_POLICY_CONST);
         return encKeyPolicy.get().getPreExpireDays();
     }
 }
