@@ -11,7 +11,7 @@ Keymanager interfaces with key store like Hardware Security Module (HSM) and Dat
 ![](_images/keymanager_hsm_integration.png)
 
 ## Encryption alrogithms
-* RSA-256 for all data encryption
+* RSA-2048 for all data encryption
 * AES-256 for zero-knowledge encryption (specific design for IDA data storage)
 
 ## Keys and certificates in MOSIP
