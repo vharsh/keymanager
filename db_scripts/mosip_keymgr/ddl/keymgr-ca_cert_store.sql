@@ -1,16 +1,4 @@
--- -------------------------------------------------------------------------------------------------
--- Database Name: mosip_keymgr
--- Table Name 	: keymgr.ca_cert_store
--- Purpose    	: Certificate Authority Certificate Store: Store details of all the certificate provided by certificate authority which will be used by MOSIP
---           
--- Create By   	: Sadanandegowda DM
--- Created Date	: Sep-2020
--- 
--- Modified Date        Modified By         Comments / Remarks
--- ------------------------------------------------------------------------------------------
--- Jan-2021		Ram Bhatt	    Set is_deleted flag to not null and default false
--- Mar-2021		Ram Bhatt	    Reverting is_deleted not null changes
--- ------------------------------------------------------------------------------------------
+
 
 -- object: keymgr.ca_cert_store | type: TABLE --
 -- DROP TABLE IF EXISTS keymgr.ca_cert_store CASCADE;
@@ -32,8 +20,7 @@ CREATE TABLE keymgr.ca_cert_store(
 	upd_dtimes timestamp,
 	is_deleted boolean DEFAULT FALSE,
 	del_dtimes timestamp,
-	CONSTRAINT pk_cacs_id PRIMARY KEY (cert_id),
-	CONSTRAINT cert_thumbprint_unique UNIQUE (cert_thumbprint,partner_domain)
+	CONSTRAINT pk_cacs_id PRIMARY KEY (cert_id)
 
 );
 -- ddl-end --
