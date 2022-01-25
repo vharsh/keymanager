@@ -11,7 +11,7 @@ Keymanager interfaces with key store like Hardware Security Module (HSM) and Dat
 
 ## Encryption alrogithms
 * RSA-2048 for all data encryption
-* AES-256 for zero-knowledge encryption (specific design for IDA data storage)
+* AES-256 for [zero-knowledge encryption](https://docs.mosip.io/1.2.0/privacy-and-security/data-protection#zero-knowledge-encryption)
 
 ## Key hierarcy
 |Key|Location|Issuer|Example|
