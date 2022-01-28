@@ -1,7 +1,7 @@
 # Key Manager 
 
 ## Overview
-Refer [Key Manager]()
+Refer [Key Manager](https://docs.mosip.io/1.2.0/modules/keymanager)
 
 ## Databases
 Refer to [SQL scripts](db_scripts).
@@ -20,7 +20,7 @@ The project requires JDK 1.11.
     ```
 
 ## Deploy
-To deploy Commons services on Kubernetes cluster using Dockers refer to [Sandbox Deployment](https://docs.mosip.io/1.2.0/deployment/sandbox-deployment).
+To deploy on Kubernetes cluster using Dockers refer to [Sandbox Deployment](https://docs.mosip.io/1.2.0/deployment/sandbox-deployment).
 
 ## Test
 Automated functional tests available in [Functional Tests repo](https://github.com/mosip/mosip-functional-tests).
