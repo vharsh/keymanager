@@ -1,5 +1,5 @@
-[![Maven Package upon a push](https://github.com/mosip/keymanager/actions/workflows/push_trigger.yml/badge.svg)](https://github.com/mosip/keymanager/actions/workflows/push_trigger.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=1.2.0-rc2&project=mosip_keymanager&metric=alert_status)](https://sonarcloud.io/dashboard?branch=1.2.0-rc2&id=mosip_keymanager)
+[![Maven Package upon a push](https://github.com/mosip/keymanager/actions/workflows/push_trigger.yml/badge.svg?branch=release-1.2.0)](https://github.com/mosip/keymanager/actions/workflows/push_trigger.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=1.2.0-rc2&project=mosip_keymanager&metric=alert_status)](https://sonarcloud.io/dashboard?branch=release-1.2.0&id=mosip_keymanager)
 
 # Key Manager 
 
