@@ -79,7 +79,7 @@ public class CryptoCore implements CryptoCoreSpec<byte[], byte[], SecretKey, Pub
 
 	// Used as a hack for softhsm oeap padding decryption usecase will be when we
 	// will use in HSM
-	private static final String RSA_ECB_NO_PADDING = "RSA/ECB/NoPadding";
+	private static final String RSA_ECB_NO_PADDING = "RSA/ECB/NoPadding"; // NOSONAR using the padding for allowing OAEP padding in PKCS11 library
 
 	private static final String PKCS11_STORE_TYPE = "PKCS11";
 
@@ -324,7 +324,7 @@ public class CryptoCore implements CryptoCoreSpec<byte[], byte[], SecretKey, Pub
 		Cipher cipher;
 		try {
 			cipher = Objects.isNull(storeType) ? Cipher.getInstance(RSA_ECB_NO_PADDING) : 
-						Cipher.getInstance(RSA_ECB_NO_PADDING, storeType);
+						Cipher.getInstance(RSA_ECB_NO_PADDING, storeType); // NOSONAR using the padding for allowing OAEP padding in PKCS11 library
 		} catch (java.security.NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException e) {
 			throw new NoSuchAlgorithmException(
 					SecurityExceptionCodeConstant.MOSIP_NO_SUCH_ALGORITHM_EXCEPTION.getErrorCode(),
