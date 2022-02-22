@@ -38,7 +38,7 @@ public class RandomKeysGenerator {
 
     private static final String CREATED_BY = "System";
 
-    private static final String WRAPPING_TRANSFORMATION = "AES/ECB/NoPadding";
+    private static final String WRAPPING_TRANSFORMATION = "AES/ECB/NoPadding"; // NOSONAR using the key wrapping
 
     @Value("${zkcrypto.random.key.generate.count}")
     private long noOfKeysRequire;
