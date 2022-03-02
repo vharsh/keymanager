@@ -110,6 +110,7 @@ public class PartnerCertificateManagerUtil {
                 + IETFUtils.valueToString((rdns[0]).getFirst().getValue()) + PartnerCertManagerConstants.COMMA;
     }
 
+    @SuppressWarnings("java:S4790") // added suppress for sonarcloud, sha1 hash is used for certificate identification only not for any sensitive data.
     public static String getCertificateThumbprint(X509Certificate x509Cert) {
         try {
             return DigestUtils.sha1Hex(x509Cert.getEncoded());

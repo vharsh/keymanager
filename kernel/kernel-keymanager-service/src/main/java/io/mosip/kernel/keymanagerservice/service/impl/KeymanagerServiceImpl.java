@@ -663,6 +663,7 @@ public class KeymanagerServiceImpl implements KeymanagerService {
 		return responseDto;
 	}
 
+	@SuppressWarnings("java:S3655") // added suppress for sonarcloud, because handling the optional object properly in other if conditions.
 	@Override
 	public KeyPairGenerateResponseDto generateCSR(CSRGenerateRequestDto csrGenRequestDto) {
 		
@@ -830,6 +831,7 @@ public class KeymanagerServiceImpl implements KeymanagerService {
 		return responseDto;
 	}
 
+	@SuppressWarnings("java:S3655") // added suppress for sonarcloud, because handling the optional object properly in other if conditions.
 	@Override
 	public UploadCertificateResponseDto uploadOtherDomainCertificate(UploadCertificateRequestDto uploadCertRequestDto) {
 

@@ -142,7 +142,7 @@ public class SessionKeyDecrytorHelper {
 
 		String appIdRefIdKey = applicationId + KeymanagerConstant.HYPHEN + referenceId;
 		if(Objects.isNull(dbKeyStore)) {
-			dbKeyStore = dbHelper.getKeyAlias(certThumbprintHex, appIdRefIdKey);
+			dbKeyStore = dbHelper.getKeyAlias(certThumbprintHex, appIdRefIdKey, applicationId, referenceId);
 			cacheKeyStore.put(certThumbprintHex, dbKeyStore);
 			cacheReferenceIds.put(certThumbprintHex, appIdRefIdKey);
 		}
@@ -417,6 +417,7 @@ public class SessionKeyDecrytorHelper {
 
 	}
 
+	@SuppressWarnings("java:S2259") // added suppress for sonarcloud, below logic will throw either one exception if not able to decrypt. 
 	private byte[] decryptSessionKeyNoKeyIdentifier(String applicationId, String referenceId, LocalDateTime localDateTimeStamp, 
 						byte[] encryptedSymmetricKey, byte[] certThumbprint, boolean packetTPFlag) {
 		
@@ -480,7 +481,7 @@ public class SessionKeyDecrytorHelper {
 		}
 
 		if(keyException == null) 
-			throw dataException;
+			throw dataException; 
 			 
 		throw keyException;
 	}
@@ -522,6 +523,7 @@ public class SessionKeyDecrytorHelper {
 		return getKeyObjects(keyAliasCp, currentKeyAliasCp, timeStamp, referenceId, reqCertThumbprint, applicationId);
 	}
 
+	@SuppressWarnings("java:S2259")  // added suppress for sonarcloud, below logic will throw either one exception if not able to decrypt.
 	private byte[] decryptWithKeyAlias(List<KeyAlias> keyAlias, String referenceId, byte[]  encryptedSymmetricKey) {
 		InvalidKeyException keyException = null;
 		InvalidDataException dataException = null;

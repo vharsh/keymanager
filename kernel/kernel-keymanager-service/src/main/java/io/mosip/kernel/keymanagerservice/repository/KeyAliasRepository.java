@@ -59,4 +59,14 @@ public interface KeyAliasRepository extends JpaRepository<KeyAlias, String> {
 	 */
 	List<KeyAlias> findByUniqueIdentifierIsNull();
 
+	/**
+	 * Function to find keyalias by applicationId, referenceId and certThumbprint
+	 * 
+	 * @param applicationId applicationId
+	 * @param referenceId   referenceId
+	 * @param certThumbprint certThumbprint
+	 * @return list of keyalias
+	 */
+	List<KeyAlias> findByApplicationIdAndReferenceIdAndCertThumbprint(String applicationId, String referenceId, String certThumbprint);
+
 }

@@ -267,7 +267,7 @@ public class KeymanagerDBHelper {
         return keyPolicyCache.get(applicationId);
     }
 
-    public KeyStore getKeyAlias(String certThumbprint, String appIdRefIdKey) {
+    public KeyStore getKeyAlias(String certThumbprint, String appIdRefIdKey, String applicationId, String referenceId) {
         List<KeyAlias> keyAliases = keyAliasRepository.findByCertThumbprint(certThumbprint);
         if (keyAliases.isEmpty()) {
             LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
@@ -283,40 +283,38 @@ public class KeymanagerDBHelper {
                     KeymanagerErrorConstant.KEY_NOT_FOUND_BY_THUMBPRINT.getErrorMessage());
         }
         // Mostly should fetch only one object from DB, so considering as first preference.
-        String foundDBAppIdRefId = keyAliases.get(0).getApplicationId() + KeymanagerConstant.HYPHEN + keyAliases.get(0).getReferenceId();
+        KeyAlias foundKeyAlias = keyAliases.get(0);
         if (keyAliases.size() > 1) {
             // Updated below logic because in case KM is used to perform both encryption/decryption. 
             // thumbprint for component certificate & Partner certificate will be same. Eg: RESIDENT (App Id)
-            int foundCounter = 0;
-            for(KeyAlias keyAlias : keyAliases) {
-                String dbAppIdRefId = keyAlias.getApplicationId() + KeymanagerConstant.HYPHEN + keyAlias.getReferenceId();
-                if (dbAppIdRefId.equals(appIdRefIdKey)) {
-                    foundDBAppIdRefId = dbAppIdRefId;
-                    foundCounter++;
-                }
-            }
-            if (foundCounter > 1) {
+            List<KeyAlias> keyAliasesWithAppId = keyAliasRepository.findByApplicationIdAndReferenceIdAndCertThumbprint(applicationId, 
+                                                    referenceId, certThumbprint);
+            if (keyAliasesWithAppId.size() > 1) {
                 LOGGER.error(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
                     "More than one key alias found for the provided thumbprint.");
                 throw new KeymanagerServiceException(KeymanagerErrorConstant.MORE_THAN_ONE_KEY_FOUND.getErrorCode(),
                     KeymanagerErrorConstant.MORE_THAN_ONE_KEY_FOUND.getErrorMessage());
             }
+            foundKeyAlias = keyAliasesWithAppId.get(0);
         }
-        // Duplicate check required because before cacheing comparison of app id & reference id is required.
+
+        // Duplicate check required because before caching comparison of app id & reference id is required.
+        String foundDBAppIdRefId = foundKeyAlias.getApplicationId() + KeymanagerConstant.HYPHEN + foundKeyAlias.getReferenceId();
         if (!foundDBAppIdRefId.equals(appIdRefIdKey)){
             LOGGER.error(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
                 "AppId & Reference Id not matching with the inputted thumbprint value(helper).");
             throw new KeymanagerServiceException(KeymanagerErrorConstant.APP_ID_REFERENCE_ID_NOT_MATCHING.getErrorCode(),
                 KeymanagerErrorConstant.APP_ID_REFERENCE_ID_NOT_MATCHING.getErrorMessage());
         }
-        Optional<KeyStore> keyFromDBStore = getKeyStoreFromDB(keyAliases.get(0).getAlias());
+        
+        Optional<KeyStore> keyFromDBStore = getKeyStoreFromDB(foundKeyAlias.getAlias());
         if (!keyFromDBStore.isPresent()){
             LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
                 "Key not found in key store for the matched thumbprint. Might has used master key during encryption.");
-            return new KeyStore(keyAliases.get(0).getAlias(), null, null, null);
+            return new KeyStore(foundKeyAlias.getAlias(), null, null, null);
             
         }
-        if (Objects.isNull(keyAliases.get(0).getUniqueIdentifier())) {
+        if (Objects.isNull(foundKeyAlias.getUniqueIdentifier())) {
             LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
                             "Key Unique identifier not found for the provided key, may be unique identifier is not updated. " +
                             "Adding Unique Identifier(s) now.");
@@ -434,6 +432,10 @@ public class KeymanagerDBHelper {
         }
         // finally, considering key policy for encryption keys.
         Optional<KeyPolicy> encKeyPolicy = getKeyPolicyFromCache(KeymanagerConstant.BASE_KEY_POLICY_CONST);
+        if (!encKeyPolicy.isPresent()) {
+            // key policy details not available for encryption key, so defaulting to 30 days 
+            return 30;
+        }
         return encKeyPolicy.get().getPreExpireDays();
     }
 }

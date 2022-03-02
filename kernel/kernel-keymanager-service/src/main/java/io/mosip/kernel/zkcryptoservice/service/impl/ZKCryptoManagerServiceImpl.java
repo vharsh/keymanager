@@ -218,6 +218,7 @@ public class ZKCryptoManagerServiceImpl implements ZKCryptoManagerService, Initi
 		return cryptoResponseDto;
 	}
 	
+	@SuppressWarnings("java:S2245") // added suppress for sonarcloud. random index to fetch the key from DB.
 	private int getRandomKeyIndex() {
 		List<Integer> indexes = dataEncryptKeystoreRepository.getIdsByKeyStatus(ZKCryptoManagerConstants.ACTIVE_STATUS);
 		int randomNum = ThreadLocalRandom.current().nextInt(0, indexes.size() + 1);

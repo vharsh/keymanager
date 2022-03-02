@@ -35,7 +35,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  *
  * @since 1.1.6
  */
-
+@SuppressWarnings("java:S5122") // Need CrossOrigin access for all the APIs, added to ignore in sonarCloud Security hotspots.
 @Lazy
 @CrossOrigin
 @RestController

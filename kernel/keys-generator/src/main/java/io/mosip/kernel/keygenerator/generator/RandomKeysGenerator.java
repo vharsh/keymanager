@@ -71,8 +71,7 @@ public class RandomKeysGenerator {
         try {
             generate10KKeysAndStoreInDB(alias);
         } catch (Exception e) {
-            LOGGER.warning("Error generating Random Keys.");
-            e.printStackTrace();
+            LOGGER.warning("Error generating Random Keys." + e.getMessage());
         }
     }
 
@@ -97,7 +96,7 @@ public class RandomKeysGenerator {
         
         SecureRandom rand = new SecureRandom();
 		KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        Cipher cipher = Cipher.getInstance(WRAPPING_TRANSFORMATION);
+        Cipher cipher = Cipher.getInstance(WRAPPING_TRANSFORMATION); // NOSONAR using the key wrapping
         Key masterKey = keyStore.getSymmetricKey(cacheMasterKeyAlias);
 
 		for (int i = startIndex; i < noOfKeysToGenerate; i++) {

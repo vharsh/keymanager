@@ -90,6 +90,7 @@ public class LicenseKeyManagerUtil {
 	 * 
 	 * @return the generated license key.
 	 */
+	@SuppressWarnings("java:S2245") // added suppress for sonarcloud.
 	public String generateLicense() {
 		List<ServiceError> errorList = new ArrayList<>();
 		String licenseKey = RandomStringUtils.randomAlphanumeric(licenseKeyLength);

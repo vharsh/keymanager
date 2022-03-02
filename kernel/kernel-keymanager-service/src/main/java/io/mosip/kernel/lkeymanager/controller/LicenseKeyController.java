@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @since 1.0.0
  *
  */
+@SuppressWarnings("java:S5122") // Need CrossOrigin access for all the APIs, added to ignore in sonarCloud Security hotspots.
 @RestController
 @Tag(name = "licensekey", description = "Operation related to License Key Management")
 public class LicenseKeyController {
