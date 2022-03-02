@@ -250,7 +250,6 @@ public class BaseKeysMigrator {
                 uploadKeyToNewKeyMgr(keyAliasObj, encryptedPrivateKey, baseKey.getCertificateData());
             } catch (Exception e) {
                 LOGGER.error("Error Re-Encrypting the Base key." + e.getMessage());
-                e.printStackTrace();
             }
         });
     }
@@ -273,6 +272,7 @@ public class BaseKeysMigrator {
         });
     }
 
+    @SuppressWarnings({"java:S3655", "java:S2259"}) // added suppress for sonarcloud, because handling the optional object properly in other if conditions.
     private void uploadKeyToNewKeyMgr(Optional<KeyAlias> keyAliasObj, String encryptedPrivateKey, String certData) {
 
         KeyMigrateBaseKeyRequestDto reqDto = new KeyMigrateBaseKeyRequestDto();
@@ -301,7 +301,7 @@ public class BaseKeysMigrator {
                .collect(Collectors.toList());
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes", "unchecked", "java:S2259"}) // added suppress for sonarcloud, because handling the optional object properly in other if conditions.
     private X509Certificate getMasterCertificate(String appId) {
         Map<String, String> uriParams = new HashMap<>();
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getCertifcateUrl)
@@ -366,7 +366,7 @@ public class BaseKeysMigrator {
         uploadZKKeyToNewKeyMgr(keyDataDtoList, true);
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes", "unchecked", "java:S2259"}) // added suppress for sonarcloud, because handling the optional object properly in other if conditions.
     private X509Certificate getZKTempCertificate() {
         Map<String, String> uriParams = new HashMap<>();
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getZKTempCertifcateUrl);
@@ -390,6 +390,7 @@ public class BaseKeysMigrator {
         return null;
 	}
 
+    @SuppressWarnings("java:S2259") // added suppress for sonarcloud, because handling the optional object properly in other if conditions.
     private void uploadZKKeyToNewKeyMgr(List<ZKKeyDataDto> keyDataDtoList, boolean purgeKeyFlag) {
 
         ZKKeyMigrateRequestDto reqDto = new ZKKeyMigrateRequestDto();

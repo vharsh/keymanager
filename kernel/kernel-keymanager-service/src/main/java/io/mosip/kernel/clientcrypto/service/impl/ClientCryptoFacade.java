@@ -167,7 +167,9 @@ public class ClientCryptoFacade {
             LOGGER.info(ClientCryptoManagerConstant.SESSIONID, "Client Security FACADE",
                     ClientCryptoManagerConstant.EMPTY, "Failed to generate secret key " + ExceptionUtils.getStackTrace(e));
         }
-        return null;
+        // Removed returning null, instead throwing exception to understand that key generation has failed. Otherwise it is possible for null pointer exception.
+        throw new ClientCryptoException(ClientCryptoErrorConstants.NOT_ABLE_GENERATE_KEY.getErrorCode(),
+                    ClientCryptoErrorConstants.NOT_ABLE_GENERATE_KEY.getErrorMessage());
     }
 
     private boolean isTPMKey(byte[] publicKey) {

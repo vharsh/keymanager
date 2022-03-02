@@ -465,6 +465,7 @@ public class KeymanagerUtil {
         return converted.toLocalDateTime();
 	}
 
+	@SuppressWarnings("java:S4790") // added suppress for sonarcloud, sha1 hash is used for value identification only not for any sensitive data.
 	public String getUniqueIdentifier(String inputStr) {
 		return Hex.toHexString(DigestUtils.sha1(inputStr)).toUpperCase();
 	}
