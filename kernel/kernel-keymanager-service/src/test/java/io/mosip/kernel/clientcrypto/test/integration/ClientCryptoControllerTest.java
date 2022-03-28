@@ -1,5 +1,6 @@
 package io.mosip.kernel.clientcrypto.test.integration;
 
+import io.mosip.kernel.clientcrypto.constant.ClientType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -51,7 +52,8 @@ public class ClientCryptoControllerTest {
 	@Test
 	@Ignore
 	public void getEncryptDecryptWithTpm() throws Exception {
-		byte[] cipher = clientCryptoFacade.encrypt(CryptoUtil.decodeBase64(public_key), dataToEncrypt.getBytes());
+		byte[] cipher = clientCryptoFacade.encrypt(ClientType.LOCAL,
+				CryptoUtil.decodeBase64(public_key), dataToEncrypt.getBytes());
 
 		ClientCryptoService clientCryptoService = clientCryptoFacade.getClientSecurity();
 		Assert.assertNotNull(clientCryptoService);
@@ -72,7 +74,7 @@ public class ClientCryptoControllerTest {
 		byte[] sigBytes = clientCryptoFacade.getClientSecurity().signData(dataToEncrypt.getBytes());
 		Assert.assertNotNull(sigBytes);
 
-		boolean valid = clientCryptoFacade.validateSignature(localPubKey, sigBytes, dataToEncrypt.getBytes());
+		boolean valid = clientCryptoFacade.validateSignature(ClientType.LOCAL, localPubKey, sigBytes, dataToEncrypt.getBytes());
 		Assert.assertTrue(valid);
 	}
 
@@ -84,7 +86,7 @@ public class ClientCryptoControllerTest {
 
 		byte[] localPubKey = clientCryptoService.getEncryptionPublicPart();
 
-		byte[] cipher = clientCryptoFacade.encrypt(localPubKey, dataToEncrypt.getBytes());
+		byte[] cipher = clientCryptoFacade.encrypt(ClientType.LOCAL, localPubKey, dataToEncrypt.getBytes());
 
 		byte[] plain = clientCryptoFacade.decrypt(cipher);
 		Assert.assertNotNull(plain);
@@ -102,7 +104,7 @@ public class ClientCryptoControllerTest {
 		byte[] sigBytes = clientCryptoFacade.getClientSecurity().signData(dataToEncrypt.getBytes());
 		Assert.assertNotNull(sigBytes);
 
-		boolean valid = clientCryptoFacade.validateSignature(localPubKey, sigBytes, dataToEncrypt.getBytes());
+		boolean valid = clientCryptoFacade.validateSignature(ClientType.LOCAL, localPubKey, sigBytes, dataToEncrypt.getBytes());
 		Assert.assertTrue(valid);
 	}
 
