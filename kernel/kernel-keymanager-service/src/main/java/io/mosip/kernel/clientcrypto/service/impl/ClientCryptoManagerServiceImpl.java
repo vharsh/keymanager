@@ -1,5 +1,6 @@
 package io.mosip.kernel.clientcrypto.service.impl;
 
+import io.mosip.kernel.clientcrypto.constant.ClientType;
 import io.mosip.kernel.clientcrypto.dto.*;
 import io.mosip.kernel.clientcrypto.service.spi.ClientCryptoManagerService;
 import io.mosip.kernel.clientcrypto.util.ClientCryptoUtils;
@@ -33,7 +34,8 @@ public class ClientCryptoManagerServiceImpl implements ClientCryptoManagerServic
 
     @Override
     public TpmSignVerifyResponseDto csVerify(TpmSignVerifyRequestDto tpmSignVerifyRequestDto) {
-        boolean result = clientCryptoFacade.validateSignature(
+        boolean result = clientCryptoFacade.validateSignature(tpmSignVerifyRequestDto.getClientType() == null ?
+                        ClientType.LOCAL : tpmSignVerifyRequestDto.getClientType(),
                 ClientCryptoUtils.decodeBase64Data(tpmSignVerifyRequestDto.getPublicKey()),
                 ClientCryptoUtils.decodeBase64Data(tpmSignVerifyRequestDto.getSignature()),
                 ClientCryptoUtils.decodeBase64Data(tpmSignVerifyRequestDto.getData()));
@@ -44,7 +46,8 @@ public class ClientCryptoManagerServiceImpl implements ClientCryptoManagerServic
 
     @Override
     public TpmCryptoResponseDto csEncrypt(TpmCryptoRequestDto tpmCryptoRequestDto) {
-        byte[] cipher = clientCryptoFacade.encrypt(
+        byte[] cipher = clientCryptoFacade.encrypt(tpmCryptoRequestDto.getClientType() == null ?
+                ClientType.LOCAL : tpmCryptoRequestDto.getClientType(),
                 ClientCryptoUtils.decodeBase64Data(tpmCryptoRequestDto.getPublicKey()),
                 ClientCryptoUtils.decodeBase64Data(tpmCryptoRequestDto.getValue()));
         TpmCryptoResponseDto tpmCryptoResponseDto = new TpmCryptoResponseDto();
