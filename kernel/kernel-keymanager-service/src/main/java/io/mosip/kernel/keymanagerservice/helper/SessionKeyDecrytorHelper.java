@@ -117,7 +117,8 @@ public class SessionKeyDecrytorHelper {
 				
 		byte[] encryptedData = CryptoUtil.decodeURLSafeBase64(symmetricKeyRequestDto.getEncryptedSymmetricKey());
 
-		if (noThumbprint) {
+		if (noThumbprint || (encryptedData.length != (CryptomanagerConstant.ENCRYPTED_SESSION_KEY_LENGTH 
+													+ CryptomanagerConstant.THUMBPRINT_LENGTH))) {
 			return decryptSymmetricKeyNoKeyIdentifier(applicationId, referenceId, encryptedData, localDateTimeStamp);
 		}
 		return decryptSymmetricKeyWithKeyIdentifier(applicationId, referenceId, encryptedData, localDateTimeStamp);
