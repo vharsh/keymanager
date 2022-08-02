@@ -20,7 +20,6 @@ import javax.crypto.SecretKey;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.mosip.kernel.core.crypto.exception.InvalidDataException;
@@ -59,10 +58,6 @@ public class SessionKeyDecrytorHelper {
     
 	private static final Logger LOGGER = KeymanagerLogger.getLogger(SessionKeyDecrytorHelper.class);
 
-	/** The 1.1.3 no thumbprint support flag. */
-	@Value("${mosip.kernel.keymanager.113nothumbprint.support:false}")
-	private boolean noThumbprint;
-	
 	/**
 	 * {@link CryptoCoreSpec} instance for cryptographic functionalities.
 	 */
@@ -112,13 +107,13 @@ public class SessionKeyDecrytorHelper {
 		boolean prependThumbprint = reqPrependThumbprint == null? false : symmetricKeyRequestDto.getPrependThumbprint();
 		LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.SYMMETRICKEYREQUEST,
 				symmetricKeyRequestDto.getApplicationId(), "prependThumbprint Value: " + prependThumbprint);
-		LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.SYMMETRICKEYREQUEST,
-				symmetricKeyRequestDto.getApplicationId(), "1.1.3 Thumbprint support property flag: " + noThumbprint);
+		/*LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.SYMMETRICKEYREQUEST,
+				symmetricKeyRequestDto.getApplicationId(), "1.1.3 Thumbprint support property flag: " + noThumbprint); */
 				
 		byte[] encryptedData = CryptoUtil.decodeURLSafeBase64(symmetricKeyRequestDto.getEncryptedSymmetricKey());
 
-		if (noThumbprint || (encryptedData.length != (CryptomanagerConstant.ENCRYPTED_SESSION_KEY_LENGTH 
-													+ CryptomanagerConstant.THUMBPRINT_LENGTH))) {
+		if (encryptedData.length != (CryptomanagerConstant.ENCRYPTED_SESSION_KEY_LENGTH 
+													+ CryptomanagerConstant.THUMBPRINT_LENGTH)) {
 			return decryptSymmetricKeyNoKeyIdentifier(applicationId, referenceId, encryptedData, localDateTimeStamp);
 		}
 		return decryptSymmetricKeyWithKeyIdentifier(applicationId, referenceId, encryptedData, localDateTimeStamp);
@@ -405,10 +400,10 @@ public class SessionKeyDecrytorHelper {
 		// Thumbprint flag is false in both encryption & decryption, then consider the latest 
 		// current key for decryption instead of taking the first generated key.
 		// to Support packet encryption done in 1.1.3(flag: flase) and packet decryption is performed above 1.1.4 (flag: true).
-		if(encryptedData.length == (CryptomanagerConstant.ENCRYPTED_SESSION_KEY_LENGTH 
+		/* if(encryptedData.length == (CryptomanagerConstant.ENCRYPTED_SESSION_KEY_LENGTH 
 											+ CryptomanagerConstant.THUMBPRINT_LENGTH)) {
 			return decryptSymmetricKeyWithKeyIdentifier(applicationId, referenceId, encryptedData, localDateTimeStamp);
-		}
+		} */
 		encryptedSymmetricKey = encryptedData;
 		SymmetricKeyResponseDto keyResponseDto = new SymmetricKeyResponseDto();
 		byte[] decryptedSymmetricKey = decryptSessionKeyNoKeyIdentifier(applicationId, referenceId, localDateTimeStamp, 
