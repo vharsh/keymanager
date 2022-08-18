@@ -1,6 +1,6 @@
 \c mosip_keymgr sysadmin
 
-delete from keymgr.key_policy_def where app_id in ('ADMIN_SERVICES','RESIDENT','DIGITAL_CARD'); 
+delete from keymgr.key_policy_def where app_id in ('ADMIN_SERVICES','RESIDENT'); 
 
 
 ALTER TABLE keymgr.key_alias DROP COLUMN IF EXISTS uni_ident;
