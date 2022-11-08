@@ -35,7 +35,7 @@ public interface SignatureService {
 	public SignatureResponseDto signPDF(PDFSignatureRequestDto request);
 
 	/**
-	 * JSON Web Signature(JWS) for the inputted data using RS256 algorithm
+	 * JSON Web Signature(JWS) for the input data using RS256 algorithm
 	 *
 	 * @param jwtSignRequestDto the jwtSignRequestDto
 	 * @return the JWTSignatureResponseDto
@@ -52,7 +52,7 @@ public interface SignatureService {
 
 
 	/**
-	 * JSON Web Signature(JWS) for the inputted data using inputted algorithm
+	 * JSON Web Signature(JWS) for the input data using input algorithm
 	 *
 	 * @param jwsSignRequestDto the JWSSignatureRequestDto
 	 * @return the JWTSignatureResponseDto

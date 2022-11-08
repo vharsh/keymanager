@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -23,10 +24,14 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import io.mosip.kernel.core.logger.spi.Logger;
+import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.kernel.core.util.DateUtils;
+import io.mosip.kernel.core.util.HMACUtils2;
 import io.mosip.kernel.keymanagerservice.logger.KeymanagerLogger;
 import io.mosip.kernel.signature.constant.SignatureConstant;
 
@@ -88,7 +93,8 @@ public class SignatureUtil {
 	}
 
 	public static JWSHeader getJWSHeader(String signAlgorithm, boolean b64JWSHeaderParam, boolean includeCertificate, 
-			boolean includeCertHash, String certificateUrl, X509Certificate x509Certificate) {
+			boolean includeCertHash, String certificateUrl, X509Certificate x509Certificate, String uniqueIdentifier, 
+			boolean includeKeyId) {
 
 		JWSAlgorithm jwsAlgorithm;
 		switch (signAlgorithm) {
@@ -142,6 +148,11 @@ public class SignatureUtil {
 			}
 		}
 
+		String keyId = convertHexToBase64(uniqueIdentifier);
+		if (includeKeyId && Objects.nonNull(keyId)) {
+			jwsHeaderBuilder.keyID(keyId);
+		}
+
 		return jwsHeaderBuilder.build();
 	}
 
@@ -153,6 +164,20 @@ public class SignatureUtil {
 		jwsSignData[jwsHeaderBytes.length] = (byte) '.';
 		System.arraycopy(actualDataToSign, 0, jwsSignData, jwsHeaderBytes.length + 1, actualDataToSign.length);
 		return jwsSignData;
+	}
+
+	public static String convertHexToBase64(String anyHexString) {
+		try {
+			
+			return CryptoUtil.encodeToURLSafeBase64(HMACUtils2.generateHash(Hex.decodeHex(anyHexString)));
+		} catch (DecoderException | NoSuchAlgorithmException e) {
+			// ignore this exception.
+			LOGGER.warn(SignatureConstant.SESSIONID, SignatureConstant.JWS_SIGN, SignatureConstant.BLANK,
+			"Warning thrown when converting hex data to base64 encoded data.");
+			// not throwing exception, as this function is added to include kid in jwt signature.
+			// in case any error in conversion kid will not be added in jwt header.
+		}
+		return null;
 	}
 
 }

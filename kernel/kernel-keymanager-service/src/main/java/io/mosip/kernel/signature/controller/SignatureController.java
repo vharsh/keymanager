@@ -114,7 +114,7 @@ public class SignatureController {
 	}
 
 	/**
-	 * Function to do JSON Web Signature(JWS) for the inputted data using RS256 algorithm
+	 * Function to do JSON Web Signature(JWS) for the input data using RS256 algorithm
 	 * 
 	 * @param requestDto {@link JWTSignatureRequestDto} having required fields.
 	 * @return The {@link JWTSignatureResponseDto}
@@ -165,12 +165,12 @@ public class SignatureController {
 	}
 
 	/**
-	 * Function to do JSON Web Signature(JWS) for the inputted data using inputted algorithm. Default Algorithm PS256.
+	 * Function to do JSON Web Signature(JWS) for the input data using input algorithm. Default Algorithm PS256.
 	 * 
 	 * @param requestDto {@link JWTSignatureRequestDto} having required fields.
 	 * @return The {@link JWTSignatureResponseDto}
 	 */
-	@Operation(summary = "Function to do JSON Web Signature(JWS) for the inputted data using inputted algorithm. Default Algorithm PS256.", 
+	@Operation(summary = "Function to do JSON Web Signature(JWS) for the input data using input algorithm. Default Algorithm PS256.", 
 			   description = "Function to JWT sign data", tags = { "signaturecontroller" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Success or you may find errors in error array in response"),

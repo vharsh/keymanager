@@ -60,15 +60,15 @@ public class JWSSignatureRequestDto {
 	private String certificateUrl;
 
 	/**
-	 * Validate inputted JSON to be valid JSON 
+	 * Validate input JSON to be valid JSON 
 	 */
-	@ApiModelProperty(notes = "Flag to validate inputted JSON to be a valid JSON.", required = false)
+	@ApiModelProperty(notes = "Flag to validate input JSON to be a valid JSON.", required = false)
 	private Boolean validateJson;
 
 	/**
-	 * Flag to determine the inputted data to be Base64URL encoded in signature process.  
+	 * Flag to determine the input data to be Base64URL encoded in signature process.  
 	 */
-	@ApiModelProperty(notes = "Flag to determine the inputted data to be Base64URL encoded in signature process", required = false)
+	@ApiModelProperty(notes = "Flag to determine the input data to be Base64URL encoded in signature process", required = false)
 	private Boolean b64JWSHeaderParam;
 
 	/**

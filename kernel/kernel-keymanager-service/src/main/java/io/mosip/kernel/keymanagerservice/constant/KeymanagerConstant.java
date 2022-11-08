@@ -196,4 +196,8 @@ public class KeymanagerConstant {
 	public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
 	public static final String UNDER_SCORE = "_";
+
+	public static final String COMPONENT_MASTER_KEY_DUMMY_REF = "COMP_MASTER";
+
+	public static final String ALL_GET_CERTIFICATES = "Request received to get all the Certificates";
 }
