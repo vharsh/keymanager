@@ -135,12 +135,16 @@ public class CryptomanagerServiceImpl implements CryptomanagerService {
 		boolean prependThumbprint = cryptoRequestDto.getPrependThumbprint() == null ? false : cryptoRequestDto.getPrependThumbprint();
 		CryptomanagerResponseDto cryptoResponseDto = new CryptomanagerResponseDto();
 		// support of 1.1.3 no thumbprint is configured as true & encryption request with no thumbprint
-		// request thumbprint flag will not be considered if support no thumbprint is set to false. 
-		if (noThumbprint && !prependThumbprint) {
+		// request thumbprint flag will not be considered if support no thumbprint is set to false.
+		//------------------- 
+		// no thumbprint flag will not be required to consider at the time of encryption. So commented the below code.
+		// from 1.2.0.1 version, support of no thumbprint flag will be removed in case of data encryption.
+		/* if (noThumbprint && !prependThumbprint) {
 			byte[] finalEncKeyBytes = cryptomanagerUtil.concatByteArrays(headerBytes, encryptedSymmetricKey);
 			cryptoResponseDto.setData(CryptoUtil.encodeToURLSafeBase64(CryptoUtil.combineByteArray(encryptedData, finalEncKeyBytes, keySplitter)));
 			return cryptoResponseDto;
-		} 
+		} */ 
+		//---------------------
 		byte[] certThumbprint = cryptomanagerUtil.getCertificateThumbprint(certificate);
 		byte[] concatedData = cryptomanagerUtil.concatCertThumbprint(certThumbprint, encryptedSymmetricKey);
 		byte[] finalEncKeyBytes = cryptomanagerUtil.concatByteArrays(headerBytes, concatedData);
