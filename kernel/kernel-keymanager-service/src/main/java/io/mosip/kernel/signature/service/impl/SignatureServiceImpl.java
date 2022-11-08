@@ -110,6 +110,10 @@ public class SignatureServiceImpl implements SignatureService {
 	@Value("${mosip.kernel.keymanager.jwtsign.validate.json:true}")
 	private boolean confValidateJson;
 
+	@Value("${mosip.kernel.keymanager.jwtsign.include.keyid:true}")
+	private boolean includeKeyId;
+
+
 	/**
 	 * Utility to generate Metadata
 	 */
@@ -292,6 +296,10 @@ public class SignatureServiceImpl implements SignatureService {
 
 		if (Objects.nonNull(certificateUrl))
 			jwSign.setHeader("x5u", certificateUrl);
+		
+		String keyId = SignatureUtil.convertHexToBase64(certificateResponse.getUniqueIdentifier());
+		if (includeKeyId && Objects.nonNull(keyId))
+			jwSign.setKeyIdHeaderValue(keyId);
 
 		jwSign.setPayload(dataToSign);
 		jwSign.setAlgorithmHeaderValue(signAlgorithm);
@@ -446,7 +454,7 @@ public class SignatureServiceImpl implements SignatureService {
 
 	@Override
 	public JWTSignatureResponseDto jwsSign(JWSSignatureRequestDto jwsSignRequestDto) {
-		// TODO Code is duplicated from jwtSign method. Duplicate code will be removed later when VC verification is implementation.
+		// TODO Code is duplicated from jwtSign method. Duplicate code will be removed later when VC verification is implement.
 		// Code duplicated because now does not want to make any change to existing code which is well tested.
 		LOGGER.info(SignatureConstant.SESSIONID, SignatureConstant.JWS_SIGN, SignatureConstant.BLANK,
 				"JWS Signature Request.");
@@ -462,7 +470,7 @@ public class SignatureServiceImpl implements SignatureService {
 		String reqDataToSign = jwsSignRequestDto.getDataToSign();
 		if (!SignatureUtil.isDataValid(reqDataToSign)) {
 			LOGGER.error(SignatureConstant.SESSIONID, SignatureConstant.JWS_SIGN, SignatureConstant.BLANK,
-					"Provided Data to sign value is invalid.");
+					"Provided Data to sign is invalid.");
 			throw new RequestException(SignatureErrorCode.INVALID_INPUT.getErrorCode(),
 					SignatureErrorCode.INVALID_INPUT.getErrorMessage());
 		}
@@ -500,8 +508,9 @@ public class SignatureServiceImpl implements SignatureService {
 		PrivateKey privateKey = certificateResponse.getCertificateEntry().getPrivateKey();
 		X509Certificate x509Certificate = certificateResponse.getCertificateEntry().getChain()[0];
 		String providerName = certificateResponse.getProviderName();
+		String uniqueIdentifier = certificateResponse.getUniqueIdentifier();
 		JWSHeader jwsHeader = SignatureUtil.getJWSHeader(signAlgorithm, b64JWSHeaderParam, includeCertificate, 
-					includeCertHash, certificateUrl, x509Certificate);
+					includeCertHash, certificateUrl, x509Certificate, uniqueIdentifier, includeKeyId);
 		
 		if (b64JWSHeaderParam) {
 			dataToSign = reqDataToSign.getBytes(StandardCharsets.UTF_8);
