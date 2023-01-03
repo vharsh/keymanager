@@ -24,9 +24,12 @@ public class KeyGeneratorUtils {
 	 * Bouncy-Castle provider instance
 	 */
 	private static BouncyCastleProvider provider;
+	
+	private static SecureRandom random;
 
 	static {
 		provider = init();
+		random = new SecureRandom();
 	}
 
 	/**
@@ -52,7 +55,6 @@ public class KeyGeneratorUtils {
 					KeyGeneratorExceptionConstant.MOSIP_NO_SUCH_ALGORITHM_EXCEPTION.getErrorCode(),
 					KeyGeneratorExceptionConstant.MOSIP_NO_SUCH_ALGORITHM_EXCEPTION.getErrorMessage(), e);
 		}
-		SecureRandom random = new SecureRandom();
 		generator.init(keylength, random);
 		return generator;
 	}
@@ -74,7 +76,6 @@ public class KeyGeneratorUtils {
 					KeyGeneratorExceptionConstant.MOSIP_NO_SUCH_ALGORITHM_EXCEPTION.getErrorCode(),
 					KeyGeneratorExceptionConstant.MOSIP_NO_SUCH_ALGORITHM_EXCEPTION.getErrorMessage(), e);
 		}
-		SecureRandom random = new SecureRandom();
 		generator.initialize(keylength, random);
 		return generator;
 	}

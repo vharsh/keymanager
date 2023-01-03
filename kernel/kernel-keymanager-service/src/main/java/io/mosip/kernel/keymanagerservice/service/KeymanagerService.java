@@ -2,6 +2,7 @@ package io.mosip.kernel.keymanagerservice.service;
 
 import java.util.Optional;
 
+import io.mosip.kernel.keymanagerservice.dto.AllCertificatesDataResponseDto;
 import io.mosip.kernel.keymanagerservice.dto.CSRGenerateRequestDto;
 import io.mosip.kernel.keymanagerservice.dto.KeyPairGenerateRequestDto;
 import io.mosip.kernel.keymanagerservice.dto.KeyPairGenerateResponseDto;
@@ -115,6 +116,15 @@ public interface KeymanagerService {
 	 * @return {@link RevokeKeyResponseDto} instance
 	 */
 	public RevokeKeyResponseDto revokeKey(RevokeKeyRequestDto revokeKeyRequestDto);
+
+	/**
+	 * Function to get all the certificates for the provided appId & refId.
+	 * 
+	 * @param Application ID  appId
+	 * @param Reference ID  refId
+	 * @return {@link AllCertificatesDataResponseDto} instance
+	 */
+	public AllCertificatesDataResponseDto getAllCertificates(String appId, Optional<String> refId);
 	
 }
 

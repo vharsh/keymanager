@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.mosip.kernel.core.http.RequestWrapper;
 import io.mosip.kernel.core.http.ResponseFilter;
 import io.mosip.kernel.core.http.ResponseWrapper;
+import io.mosip.kernel.keymanagerservice.dto.AllCertificatesDataResponseDto;
 import io.mosip.kernel.keymanagerservice.dto.CSRGenerateRequestDto;
 import io.mosip.kernel.keymanagerservice.dto.KeyPairGenerateRequestDto;
 import io.mosip.kernel.keymanagerservice.dto.KeyPairGenerateResponseDto;
@@ -225,6 +226,32 @@ public class KeymanagerController {
 
 		ResponseWrapper<RevokeKeyResponseDto> response = new ResponseWrapper<>();
 		response.setResponse(keymanagerService.revokeKey(revokeKeyRequestDto.getRequest()));
+		return response;
+	}
+
+	/**
+	 * Request to get all the Certificates for the Provided APP ID & REF ID.
+	 * 
+	 * @param applicationId Application id of the application requesting Certificate
+	 * @param referenceId   Reference id of the application requesting Certificate. Blank in case of Master Key.
+	 * @return {@link KeyPairGenerateResponseDto} instance
+	*/
+	@Operation(summary = "Request to get all the certificates for the Provided APP ID & REF ID", description = "Request to get all the certificates for the Provided APP ID & REF ID", tags = { "keymanager" })
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Success or you may find errors in error array in response"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(hidden = true))) })
+	//@PreAuthorize("hasAnyRole('ZONAL_ADMIN','GLOBAL_ADMIN','INDIVIDUAL','REGISTRATION_PROCESSOR','REGISTRATION_ADMIN','REGISTRATION_SUPERVISOR','REGISTRATION_OFFICER','ID_AUTHENTICATION','TEST','PRE_REGISTRATION_ADMIN','RESIDENT')")
+	@PreAuthorize("hasAnyRole(@KeyManagerAuthRoles.getGetgetcertificate())")
+	@ResponseFilter
+	@GetMapping(value = "/getAllCertificates")
+	public ResponseWrapper<AllCertificatesDataResponseDto> getAllCertificates(
+		@ApiParam("Id of application") @RequestParam("applicationId") String applicationId,
+		@ApiParam("Refrence Id as metadata") @RequestParam("referenceId") Optional<String> referenceId) {
+
+		ResponseWrapper<AllCertificatesDataResponseDto> response = new ResponseWrapper<>();
+		response.setResponse(keymanagerService.getAllCertificates(applicationId, referenceId));
 		return response;
 	}
 }
