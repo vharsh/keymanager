@@ -46,6 +46,10 @@ public class KeymanagerDBHelper {
 
     private static final Logger LOGGER = KeymanagerLogger.getLogger(KeymanagerDBHelper.class);
 
+    /** The sign applicationid. */
+	@Value("${mosip.sign.applicationid:KERNEL}")
+	private String signApplicationId;
+
     @Value("${mosip.sign-certificate-refid:SIGN}")
 	private String signRefId;
 
@@ -330,12 +334,12 @@ public class KeymanagerDBHelper {
         List<KeyAlias> allKeyAliases = keyAliasRepository.findByCertThumbprintIsNull();
         allKeyAliases.stream().filter(keyAlias -> ((Objects.isNull(keyAlias.getCertThumbprint()) || 
                                                     keyAlias.getCertThumbprint().equals(KeymanagerConstant.EMPTY)) && 
-                                                    !keyAlias.getApplicationId().equals(KeymanagerConstant.KERNEL_APP_ID) &&
+                                                    !keyAlias.getApplicationId().equals(signApplicationId) &&
                                                     !keyAlias.getReferenceId().equals(KeymanagerConstant.KERNEL_IDENTIFY_CACHE)))
                                 .forEach(keyAlias -> {
                                     try {
                                         if (keyAlias.getReferenceId().isEmpty() || 
-                                            (keyAlias.getApplicationId().equals(KeymanagerConstant.KERNEL_APP_ID) &&
+                                            (keyAlias.getApplicationId().equals(signApplicationId) &&
                                                 keyAlias.getReferenceId().equals(signRefId))) {
                                             String uniqueValue = keyAlias.getApplicationId() + KeymanagerConstant.UNDER_SCORE + 
                                                                 keyAlias.getReferenceId() + KeymanagerConstant.UNDER_SCORE +
@@ -380,12 +384,12 @@ public class KeymanagerDBHelper {
         List<KeyAlias> allKeyAliases = keyAliasRepository.findByUniqueIdentifierIsNull();
         allKeyAliases.stream().filter(keyAlias -> ((Objects.isNull(keyAlias.getUniqueIdentifier()) || 
                                                     keyAlias.getUniqueIdentifier().equals(KeymanagerConstant.EMPTY)) && 
-                                                    !keyAlias.getApplicationId().equals(KeymanagerConstant.KERNEL_APP_ID) &&
+                                                    !keyAlias.getApplicationId().equals(signApplicationId) &&
                                                     !keyAlias.getReferenceId().equals(KeymanagerConstant.KERNEL_IDENTIFY_CACHE)))
                                 .forEach(keyAlias -> {
                                     try {
                                         if (keyAlias.getReferenceId().isEmpty() || 
-                                            (keyAlias.getApplicationId().equals(KeymanagerConstant.KERNEL_APP_ID) &&
+                                            (keyAlias.getApplicationId().equals(signApplicationId) &&
                                                 keyAlias.getReferenceId().equals(signRefId))) {
                                             String uniqueValue = keyAlias.getApplicationId() + KeymanagerConstant.UNDER_SCORE + 
                                                     keyAlias.getReferenceId() + KeymanagerConstant.UNDER_SCORE +
@@ -427,7 +431,7 @@ public class KeymanagerDBHelper {
             return 0;
         }
         
-        if (referenceId.isEmpty() || (applicationId.equals(KeymanagerConstant.KERNEL_APP_ID) &&
+        if (referenceId.isEmpty() || (applicationId.equals(signApplicationId) &&
                         (referenceId.equals(signRefId) || referenceId.equals(KeymanagerConstant.KERNEL_IDENTIFY_CACHE)))) {
             // key policy details for component Master Key.
             return keyPolicy.get().getPreExpireDays();
