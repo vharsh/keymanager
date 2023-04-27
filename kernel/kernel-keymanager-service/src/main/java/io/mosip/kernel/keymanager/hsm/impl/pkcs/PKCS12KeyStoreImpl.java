@@ -125,6 +125,7 @@ public class PKCS12KeyStoreImpl implements io.mosip.kernel.core.keymanager.spi.K
     
 
 	public PKCS12KeyStoreImpl(Map<String, String> params) throws Exception {
+		LOGGER.warn("IT IS NOT SUGGESTED TO USE PKCS12 KEYSTORE TYPE IN PRODUCTION ENVIRONMENT");
         this.keystoreType = KeymanagerConstant.KEYSTORE_TYPE_PKCS12;
         this.p12FilePath = params.get(KeymanagerConstant.CONFIG_FILE_PATH);
         this.keystorePass = params.get(KeymanagerConstant.PKCS11_KEYSTORE_PASSWORD);
@@ -309,7 +310,7 @@ public class PKCS12KeyStoreImpl implements io.mosip.kernel.core.keymanager.spi.K
 		if(privateKeyEntry != null)
 			return privateKeyEntry;
 
-        try {
+		try {
             if (keyStore.entryInstanceOf(alias, PrivateKeyEntry.class)) {
                 LOGGER.debug("sessionId", "KeyStoreImpl", "getAsymmetricKey", "alias is instanceof keystore");
                 ProtectionParameter password = getPasswordProtection();
