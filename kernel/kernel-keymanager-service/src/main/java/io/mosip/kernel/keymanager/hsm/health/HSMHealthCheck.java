@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
  * @since 1.2.1
  */
 
-@Component
+@Component("HSMHealth")
 public class HSMHealthCheck implements ReactiveHealthIndicator {
     
     private static final Logger LOGGER = KeymanagerLogger.getLogger(HSMHealthCheck.class);
