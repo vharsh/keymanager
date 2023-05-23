@@ -111,7 +111,8 @@ public class SessionKeyDecrytorHelper {
 				symmetricKeyRequestDto.getApplicationId(), "1.1.3 Thumbprint support property flag: " + noThumbprint); */
 				
 		byte[] encryptedData = CryptoUtil.decodeURLSafeBase64(symmetricKeyRequestDto.getEncryptedSymmetricKey());
-
+		LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.SYMMETRICKEYREQUEST,
+				symmetricKeyRequestDto.getApplicationId(), "Encrypted Data length: " + encryptedData.length);
 		if (encryptedData.length != (CryptomanagerConstant.ENCRYPTED_SESSION_KEY_LENGTH 
 													+ CryptomanagerConstant.THUMBPRINT_LENGTH)) {
 			return decryptSymmetricKeyNoKeyIdentifier(applicationId, referenceId, encryptedData, localDateTimeStamp);
