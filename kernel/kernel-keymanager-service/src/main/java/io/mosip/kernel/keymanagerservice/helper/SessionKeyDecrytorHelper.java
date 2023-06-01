@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-
 import javax.crypto.SecretKey;
 
 import org.bouncycastle.util.encoders.Hex;
@@ -88,9 +86,8 @@ public class SessionKeyDecrytorHelper {
 	@Autowired
 	private KeyStore keyStore;
 
-	private Map<String, io.mosip.kernel.keymanagerservice.entity.KeyStore> cacheKeyStore = new ConcurrentHashMap<>();
-
-	private Map<String, String> cacheReferenceIds = new ConcurrentHashMap<>();
+	@Autowired
+	private PrivateKeyDecryptorHelper privateKeyDecryptorHelper;
 
     public SymmetricKeyResponseDto decryptSessionKey(SymmetricKeyRequestDto symmetricKeyRequestDto) {
 		LocalDateTime localDateTimeStamp = DateUtils.getUTCCurrentDateTime();
@@ -135,7 +132,7 @@ public class SessionKeyDecrytorHelper {
 		byte[] encryptedSymmetricKey = Arrays.copyOfRange(encryptedData, CryptomanagerConstant.THUMBPRINT_LENGTH, 
 									encryptedData.length);
 		String certThumbprintHex = Hex.toHexString(certThumbprint).toUpperCase();
-		io.mosip.kernel.keymanagerservice.entity.KeyStore dbKeyStore = cacheKeyStore.getOrDefault(certThumbprintHex, null);
+		/* io.mosip.kernel.keymanagerservice.entity.KeyStore dbKeyStore = cacheKeyStore.getOrDefault(certThumbprintHex, null);
 
 		String appIdRefIdKey = applicationId + KeymanagerConstant.HYPHEN + referenceId;
 		String compMasterKeyRefId = applicationId + KeymanagerConstant.HYPHEN + KeymanagerConstant.COMPONENT_MASTER_KEY_DUMMY_REF; 
@@ -156,8 +153,10 @@ public class SessionKeyDecrytorHelper {
                 "Application Id & Reference ID not matching with the input thumbprint value(decrypt).");
             throw new KeymanagerServiceException(KeymanagerErrorConstant.APP_ID_REFERENCE_ID_NOT_MATCHING.getErrorCode(),
                 KeymanagerErrorConstant.APP_ID_REFERENCE_ID_NOT_MATCHING.getErrorMessage());
-        }
+        } */
 
+		io.mosip.kernel.keymanagerservice.entity.KeyStore dbKeyStore = privateKeyDecryptorHelper.getDBKeyStoreData(certThumbprintHex, 
+																		applicationId, referenceId);
 		SymmetricKeyResponseDto keyResponseDto = new SymmetricKeyResponseDto();
 		byte[] decryptedSymmetricKey = decryptSessionKeyWithCertificateThumbprint(dbKeyStore, encryptedSymmetricKey, referenceId);
 		keyResponseDto.setSymmetricKey(CryptoUtil.encodeToURLSafeBase64(decryptedSymmetricKey));
@@ -168,7 +167,7 @@ public class SessionKeyDecrytorHelper {
 	private byte[] decryptSessionKeyWithCertificateThumbprint(io.mosip.kernel.keymanagerservice.entity.KeyStore dbKeyStore, 
 			byte[] encryptedSymmetricKey, String referenceId) {
 		
-		Object[] keys = getKeyObjects(dbKeyStore);
+		Object[] keys = privateKeyDecryptorHelper.getKeyObjects(dbKeyStore, true);
 		PrivateKey privateKey = (PrivateKey) keys[0];
 		PublicKey publicKey = ((Certificate) keys[1]).getPublicKey();
 		try {
@@ -184,7 +183,7 @@ public class SessionKeyDecrytorHelper {
 		}
 	}
 
-	private Object[] getKeyObjects(io.mosip.kernel.keymanagerservice.entity.KeyStore dbKeyStore) {
+	/* private Object[] getKeyObjects(io.mosip.kernel.keymanagerservice.entity.KeyStore dbKeyStore) {
 		
 		String ksAlias = dbKeyStore.getAlias();
 
@@ -222,7 +221,7 @@ public class SessionKeyDecrytorHelper {
 			throw new CryptoException(KeymanagerErrorConstant.CRYPTO_EXCEPTION.getErrorCode(),
 					KeymanagerErrorConstant.CRYPTO_EXCEPTION.getErrorMessage() + e.getMessage(), e);
 		}
-	}
+	} */
 
 	/* private byte[] decryptSessionKeyWithKeyIdentifier(String applicationId, String referenceId, LocalDateTime localDateTimeStamp, 
 						byte[] encryptedSymmetricKey, byte[] certThumbprint) {

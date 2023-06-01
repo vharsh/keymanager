@@ -244,7 +244,7 @@ public class SignatureServiceImpl implements SignatureService {
 		String reqDataToSign = jwtSignRequestDto.getDataToSign();
 		if (!SignatureUtil.isDataValid(reqDataToSign)) {
 			LOGGER.error(SignatureConstant.SESSIONID, SignatureConstant.JWT_SIGN, SignatureConstant.BLANK,
-					"Provided Data to sign value is invalid.");
+					"Provided Data to sign is invalid.");
 			throw new RequestException(SignatureErrorCode.INVALID_INPUT.getErrorCode(),
 					SignatureErrorCode.INVALID_INPUT.getErrorMessage());
 		}
@@ -252,7 +252,7 @@ public class SignatureServiceImpl implements SignatureService {
 		String decodedDataToSign = new String(CryptoUtil.decodeBase64(reqDataToSign));
 		if (confValidateJson && !SignatureUtil.isJsonValid(decodedDataToSign)) {
 			LOGGER.error(SignatureConstant.SESSIONID, SignatureConstant.JWT_SIGN, SignatureConstant.BLANK,
-					"Provided Data to sign value is invalid JSON.");
+					"Provided Data to sign is invalid JSON.");
 			throw new RequestException(SignatureErrorCode.INVALID_JSON.getErrorCode(),
 					SignatureErrorCode.INVALID_JSON.getErrorMessage());
 		}
