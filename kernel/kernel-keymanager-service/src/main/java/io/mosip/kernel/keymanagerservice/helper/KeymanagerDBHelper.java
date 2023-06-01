@@ -282,7 +282,7 @@ public class KeymanagerDBHelper {
         if (keyAliases.isEmpty()) {
             // Still key not found after updating the thumbprints. So throwing exception.
             LOGGER.error(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
-                    "no key alias found for the provided thumbprint after updating the thumbprints in DB.");
+                    "no key alias found for the provided thumbprint after updating the thumbprints in DB. TP: " + certThumbprint);
             throw new KeymanagerServiceException(KeymanagerErrorConstant.KEY_NOT_FOUND_BY_THUMBPRINT.getErrorCode(),
                     KeymanagerErrorConstant.KEY_NOT_FOUND_BY_THUMBPRINT.getErrorMessage());
         }
