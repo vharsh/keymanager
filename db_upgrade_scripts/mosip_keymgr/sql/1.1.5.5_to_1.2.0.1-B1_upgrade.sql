@@ -1,3 +1,11 @@
+ALTER DATABASE mosip_keymgr OWNER TO postgres;
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA keymgr TO postgres;
+
+REVOKE ALL PRIVILEGES ON DATABASE mosip_keymgr FROM keymgruser, sysadmin;
+
+GRANT SELECT, INSERT, TRUNCATE, REFERENCES, UPDATE, DELETE ON ALL TABLES IN SCHEMA keymgr TO keymgruser;
+
 ALTER TABLE keymgr.ca_cert_store ADD CONSTRAINT cert_thumbprint_unique UNIQUE (cert_thumbprint,partner_domain);
 
 ALTER TABLE keymgr.key_alias ADD COLUMN uni_ident character varying(50);
