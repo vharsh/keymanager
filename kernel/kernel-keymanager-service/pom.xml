@@ -269,9 +269,34 @@
 			<version>3.1.7.RELEASE</version>
 		</dependency>
 
-
+		<dependency>
+			<groupId>io.github.ehn-digital-green-development</groupId>
+			<artifactId>base45</artifactId>
+			<version>0.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.upokecenter</groupId>
+			<artifactId>cbor</artifactId>
+			<version>4.5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>net.i2p.crypto</groupId>
+			<artifactId>eddsa</artifactId>
+			<version>0.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-cbor</artifactId>
+			<version>2.9.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.augustcellars.cose</groupId>
+			<artifactId>cose-java</artifactId>
+			<version>1.1.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/cose-java-1.1.0.jar</systemPath>
+		</dependency>
 	</dependencies>
-	
 <distributionManagement>
 		<snapshotRepository>
                         <id>ossrh</id>
