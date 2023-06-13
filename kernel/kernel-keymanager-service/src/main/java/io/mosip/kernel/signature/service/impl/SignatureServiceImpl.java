@@ -17,18 +17,47 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
 import javax.crypto.SecretKey;
 
+import COSE.AlgorithmID;
+import COSE.OneKey;
 import com.nimbusds.jose.JWSHeader;
 
+import com.upokecenter.cbor.CBORObject;
+import io.mosip.kernel.signature.dto.JWSSignatureRequestDto;
+import io.mosip.kernel.signature.dto.JWTSignatureRequestDto;
+import io.mosip.kernel.signature.dto.JWTSignatureResponseDto;
+import io.mosip.kernel.signature.dto.JWTSignatureVerifyRequestDto;
+import io.mosip.kernel.signature.dto.JWTSignatureVerifyResponseDto;
+import io.mosip.kernel.signature.dto.PDFSignatureRequestDto;
+import io.mosip.kernel.signature.dto.SignRequestDto;
+import io.mosip.kernel.signature.dto.SignatureRequestDto;
+import io.mosip.kernel.signature.dto.SignatureResponseDto;
+import io.mosip.kernel.signature.dto.TimestampRequestDto;
+import io.mosip.kernel.signature.dto.ValidatorResponseDto;
+
+import io.mosip.kernel.signature.dto.CWTSignatureResponseDto;
+import io.mosip.kernel.signature.dto.CWTSignatureRequestDto;
+import io.mosip.kernel.signature.dto.CWTSignatureVerifyResponseDto;
+import io.mosip.kernel.signature.dto.CWTSignatureVerifyRequestDto;
+import io.mosip.kernel.signature.dto.CWTDecodeRequestDto;
+import io.mosip.kernel.signature.dto.CWTDecodeResponseDto;
+
+
+import io.mosip.kernel.signature.util.CWT;
+import io.mosip.kernel.signature.util.CwtCryptoCtx;
+import io.mosip.kernel.signature.util.KeyUtil;
+import nl.minvws.encoding.Base45;
 import org.apache.commons.codec.binary.Base64;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -58,17 +87,6 @@ import io.mosip.kernel.partnercertservice.dto.CertificateTrustResponeDto;
 import io.mosip.kernel.partnercertservice.service.spi.PartnerCertificateManagerService;
 import io.mosip.kernel.signature.constant.SignatureConstant;
 import io.mosip.kernel.signature.constant.SignatureErrorCode;
-import io.mosip.kernel.signature.dto.JWSSignatureRequestDto;
-import io.mosip.kernel.signature.dto.JWTSignatureRequestDto;
-import io.mosip.kernel.signature.dto.JWTSignatureResponseDto;
-import io.mosip.kernel.signature.dto.JWTSignatureVerifyRequestDto;
-import io.mosip.kernel.signature.dto.JWTSignatureVerifyResponseDto;
-import io.mosip.kernel.signature.dto.PDFSignatureRequestDto;
-import io.mosip.kernel.signature.dto.SignRequestDto;
-import io.mosip.kernel.signature.dto.SignatureRequestDto;
-import io.mosip.kernel.signature.dto.SignatureResponseDto;
-import io.mosip.kernel.signature.dto.TimestampRequestDto;
-import io.mosip.kernel.signature.dto.ValidatorResponseDto;
 import io.mosip.kernel.signature.exception.CertificateNotValidException;
 import io.mosip.kernel.signature.exception.PublicKeyParseException;
 import io.mosip.kernel.signature.exception.RequestException;
@@ -112,6 +130,40 @@ public class SignatureServiceImpl implements SignatureService {
 
 	@Value("${mosip.kernel.keymanager.jwtsign.include.keyid:true}")
 	private boolean includeKeyId;
+
+
+	public static final short ISS = 1; // Major type 3 (text string)
+
+	/**
+	 * The proof-of-possession key selected by the AS
+	 */
+	public static final short CNF = 8; //Major type 5 (map)
+
+	/**
+	 * The access token identifier
+	 */
+	public static final short CTI = 169; // Major type 2 (byte string)
+
+	/**
+	 * A cnf containing just a key identifier
+	 */
+	public static final short COSE_KID = 3;
+
+	public static final short IAT = 6; // 6t1
+
+	@Value("${mosip.kernel.keymanager.service.cose.privatekey}")
+	private String privateKeyStr;
+
+	@Value("${mosip.kernel.keymanager.service.cose.publickey}")
+	private String publicKeyStr;
+
+	private static String countryCode;
+
+	@Value("${mosip.kernel.keymanager.service.country.code:PH}")
+	public void setCountryCode(String countrycode) {
+		countryCode = countrycode;
+	}
+
 
 
 	/**
@@ -536,5 +588,68 @@ public class SignatureServiceImpl implements SignatureService {
 		return responseDto;
 	}
 
-	
+	public CWTSignatureResponseDto cwtSign(CWTSignatureRequestDto request) throws Exception {
+		CWTSignatureResponseDto cwtSignatureResponseDto=new CWTSignatureResponseDto();
+		String decodedDataToSign = new String(CryptoUtil.decodeBase64(request.getDataToSign()));
+		OneKey oneKey= KeyUtil.getOneKey(privateKeyStr,publicKeyStr);
+		HashMap<Short, CBORObject> claims = new HashMap<>();
+		long iatEpoch = new Date().getTime()/1000;
+		claims.put(IAT, CBORObject.FromObject(iatEpoch));
+		claims.put(ISS, CBORObject.FromObject(countryCode));
+		Map<Short, CBORObject> keyMap = new HashMap<Short, CBORObject>();
+		keyMap.put(COSE_KID, CBORObject.FromObject(request.getCoseId()));
+		claims.put(CNF, CBORObject.FromObject(keyMap));
+		claims.put(CTI, CBORObject.FromObject(decodedDataToSign));
+		CBORObject alg =  AlgorithmID.EDDSA.AsCBOR();
+		CwtCryptoCtx ctx = CwtCryptoCtx.sign1Create(oneKey, alg);
+		CWT cwt = new CWT(claims);
+		CBORObject msg = cwt.encode(ctx);
+		ctx = CwtCryptoCtx.sign1Verify(oneKey.PublicKey(), alg);
+		byte[] rawCWT = msg.EncodeToBytes();
+		CWT cwt2 = CWT.processCOSE(rawCWT, ctx);
+		LOGGER.info("created sign cwt.");
+		cwtSignatureResponseDto.setCwtSignedData(Base45.getEncoder().encodeToString(rawCWT));
+		cwtSignatureResponseDto.setTimestamp(DateUtils.getUTCCurrentDateTime());
+		return cwtSignatureResponseDto;
+	}
+
+	@Override
+	public CWTSignatureVerifyResponseDto cwtVerify(CWTSignatureVerifyRequestDto request) {
+		CWTSignatureVerifyResponseDto cwtSignatureVerifyResponseDto=new CWTSignatureVerifyResponseDto();
+		CBORObject alg = AlgorithmID.EDDSA.AsCBOR();
+		try {
+			OneKey oneKey= KeyUtil.getOneKey(null,publicKeyStr);
+			CwtCryptoCtx ctx = CwtCryptoCtx.sign1Verify(oneKey.PublicKey(), alg);
+			CWT cwt2 = CWT.processCOSE(Base45.getDecoder().decode(request.getCwtSignatureData()), ctx);
+			cwtSignatureVerifyResponseDto.setSignatureValid(true);
+			cwtSignatureVerifyResponseDto.setMessage("CWT Signature is valid");
+		} catch (Exception e) {
+			cwtSignatureVerifyResponseDto.setSignatureValid(false);
+			cwtSignatureVerifyResponseDto.setMessage("CWT Signature is invalid");
+			e.printStackTrace();
+		}
+		return cwtSignatureVerifyResponseDto;
+	}
+
+	@Override
+	public CWTDecodeResponseDto cwtDecode(CWTDecodeRequestDto request) {
+		CBORObject alg = AlgorithmID.ECDSA_256.AsCBOR();
+		CWTDecodeResponseDto cwtDecodeResponseDto=new CWTDecodeResponseDto();
+		CWT cwt=null;
+		JSONObject json = null;
+		try {
+			OneKey oneKey= KeyUtil.getOneKey(privateKeyStr,publicKeyStr);
+			CwtCryptoCtx ctx = CwtCryptoCtx.sign1Verify(oneKey.PublicKey(), alg);
+			cwt = CWT.processCOSE(Base45.getDecoder().decode(request.getCwtSignatureData()), ctx);
+			CBORObject cborObject=cwt.getClaim((short) 169);
+			System.out.println("cbor object "+cborObject.AsString());
+			JSONParser parser = new JSONParser();
+			json = (JSONObject) parser.parse(cborObject.AsString());
+			cwtDecodeResponseDto.setData(json.toJSONString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("error while converting to CWT object");
+		}
+		return cwtDecodeResponseDto;
+	}
 }
