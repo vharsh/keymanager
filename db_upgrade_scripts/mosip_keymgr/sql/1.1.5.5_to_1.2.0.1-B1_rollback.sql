@@ -1,5 +1,3 @@
-\c mosip_keymgr sysadmin
-
 delete from keymgr.key_policy_def where app_id in ('ADMIN_SERVICES','RESIDENT','COMPLIANCE_TOOLKIT'); 
 
 
