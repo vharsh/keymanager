@@ -1,5 +1,14 @@
-\c mosip_keymgr sysadmin
+\c mosip_keymgr
 
+REASSIGN OWNED BY sysadmin TO postgres;
+
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA keymgr FROM keymgruser;
+
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA keymgr FROM sysadmin;
+
+GRANT SELECT, INSERT, TRUNCATE, REFERENCES, UPDATE, DELETE ON ALL TABLES IN SCHEMA keymgr TO keymgruser;
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA keymgr TO postgres;
 
 ALTER TABLE keymgr.ca_cert_store ADD CONSTRAINT cert_thumbprint_unique UNIQUE (cert_thumbprint,partner_domain);
 
