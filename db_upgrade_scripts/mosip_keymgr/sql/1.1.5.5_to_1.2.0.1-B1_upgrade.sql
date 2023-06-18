@@ -1,9 +1,5 @@
 \c mosip_keymgr
 
-REASSIGN OWNED BY postgres TO sysadmin;
-
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA keymgr TO sysadmin;
-
 REASSIGN OWNED BY sysadmin TO postgres;
 
 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA keymgr FROM keymgruser;
