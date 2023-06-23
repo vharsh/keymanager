@@ -2,7 +2,6 @@ package io.mosip.kernel.signature.controller;
 
 import javax.validation.Valid;
 
-import io.mosip.kernel.signature.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,6 +13,17 @@ import io.mosip.kernel.core.http.RequestWrapper;
 import io.mosip.kernel.core.http.ResponseFilter;
 import io.mosip.kernel.core.http.ResponseWrapper;
 import io.mosip.kernel.core.signatureutil.model.SignatureResponse;
+import io.mosip.kernel.signature.dto.JWSSignatureRequestDto;
+import io.mosip.kernel.signature.dto.JWTSignatureRequestDto;
+import io.mosip.kernel.signature.dto.JWTSignatureResponseDto;
+import io.mosip.kernel.signature.dto.JWTSignatureVerifyRequestDto;
+import io.mosip.kernel.signature.dto.JWTSignatureVerifyResponseDto;
+import io.mosip.kernel.signature.dto.PDFSignatureRequestDto;
+import io.mosip.kernel.signature.dto.SignRequestDto;
+import io.mosip.kernel.signature.dto.SignResponseDto;
+import io.mosip.kernel.signature.dto.SignatureResponseDto;
+import io.mosip.kernel.signature.dto.TimestampRequestDto;
+import io.mosip.kernel.signature.dto.ValidatorResponseDto;
 import io.mosip.kernel.signature.service.SignatureService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -175,55 +185,6 @@ public class SignatureController {
 		JWTSignatureResponseDto signatureResponse = service.jwsSign(requestDto.getRequest());
 		ResponseWrapper<JWTSignatureResponseDto> response = new ResponseWrapper<>();
 		response.setResponse(signatureResponse);
-		return response;
-	}
-
-
-	/**
-	 * Function to do CBOR Web Signature(JWS) for the inputted data using EdDSA algorithm
-	 *
-	 * @param requestDto {@link CWTSignatureRequestDto} having required fields.
-	 * @return The {@link CWTSignatureResponseDto}
-	 */
-//	@PreAuthorize("hasAnyRole('ZONAL_ADMIN','GLOBAL_ADMIN','RESIDENT','PRINT_PARTNER')")
-	@ResponseFilter
-	@PreAuthorize("hasAnyRole(@signAuthRoles.getPostcwtsign())")
-	@PostMapping(value = "/cwtSign")
-	public ResponseWrapper<CWTSignatureResponseDto> cwtSign(@RequestBody @Valid RequestWrapper<CWTSignatureRequestDto> requestDto) throws Exception {
-		CWTSignatureResponseDto signatureResponse = service.cwtSign(requestDto.getRequest());
-		ResponseWrapper<CWTSignatureResponseDto> response = new ResponseWrapper<>();
-		response.setResponse(signatureResponse);
-		return response;
-	}
-	/**
-	 * Function to CWT Signature verification
-	 *
-	 * @param requestDto {@link CWTSignatureVerifyRequestDto} having required fields.
-	 * @return The {@link CWTSignatureVerifyResponseDto}
-	 */
-	@ResponseFilter
-	@PreAuthorize("hasAnyRole(@signAuthRoles.getPostcwtverify())")
-	@PostMapping(value = "/cwtVerify")
-	public ResponseWrapper<CWTSignatureVerifyResponseDto> cwtVerify(@RequestBody @Valid RequestWrapper<CWTSignatureVerifyRequestDto> requestDto) {
-		CWTSignatureVerifyResponseDto signatureResponse = service.cwtVerify(requestDto.getRequest());
-		ResponseWrapper<CWTSignatureVerifyResponseDto> response = new ResponseWrapper<>();
-		response.setResponse(signatureResponse);
-		return response;
-	}
-	/**
-	 * Function to CWT decode
-	 *
-	 * @param requestDto {@link CWTDecodeRequestDto} having required fields.
-	 * @return The {@link CWTDecodeResponseDto}
-	 */
-	//@PreAuthorize("hasAnyRole('ZONAL_ADMIN','GLOBAL_ADMIN','RESIDENT','PRINT_PARTNER')")
-	@ResponseFilter
-	@PreAuthorize("hasAnyRole(@signAuthRoles.getPostcwtdecode())")
-	@PostMapping(value = "/cwtDecode")
-	public ResponseWrapper<CWTDecodeResponseDto> cwtDecode(@RequestBody @Valid RequestWrapper<CWTDecodeRequestDto> requestDto) {
-		CWTDecodeResponseDto cwtDecodeResponse = service.cwtDecode(requestDto.getRequest());
-		ResponseWrapper<CWTDecodeResponseDto> response = new ResponseWrapper<>();
-		response.setResponse(cwtDecodeResponse);
 		return response;
 	}
 }
