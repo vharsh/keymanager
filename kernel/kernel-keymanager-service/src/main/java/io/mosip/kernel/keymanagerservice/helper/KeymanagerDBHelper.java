@@ -45,7 +45,10 @@ import io.mosip.kernel.keymanagerservice.util.KeymanagerUtil;
 public class KeymanagerDBHelper {
 
     private static final Logger LOGGER = KeymanagerLogger.getLogger(KeymanagerDBHelper.class);
-
+    
+    @Value("${mosip.sign.applicationid:KERNEL}")
+	private String signApplicationId;
+    
     @Value("${mosip.sign-certificate-refid:SIGN}")
 	private String signRefId;
 
@@ -330,12 +333,12 @@ public class KeymanagerDBHelper {
         List<KeyAlias> allKeyAliases = keyAliasRepository.findByCertThumbprintIsNull();
         allKeyAliases.stream().filter(keyAlias -> ((Objects.isNull(keyAlias.getCertThumbprint()) || 
                                                     keyAlias.getCertThumbprint().equals(KeymanagerConstant.EMPTY)) && 
-                                                    !keyAlias.getApplicationId().equals(KeymanagerConstant.KERNEL_APP_ID) &&
+                                                    !keyAlias.getApplicationId().equals(signApplicationId) &&
                                                     !keyAlias.getReferenceId().equals(KeymanagerConstant.KERNEL_IDENTIFY_CACHE)))
                                 .forEach(keyAlias -> {
                                     try {
                                         if (keyAlias.getReferenceId().isEmpty() || 
-                                            (keyAlias.getApplicationId().equals(KeymanagerConstant.KERNEL_APP_ID) &&
+                                            (keyAlias.getApplicationId().equals(signApplicationId) &&
                                                 keyAlias.getReferenceId().equals(signRefId))) {
                                             String uniqueValue = keyAlias.getApplicationId() + KeymanagerConstant.UNDER_SCORE + 
                                                                 keyAlias.getReferenceId() + KeymanagerConstant.UNDER_SCORE +
@@ -380,12 +383,12 @@ public class KeymanagerDBHelper {
         List<KeyAlias> allKeyAliases = keyAliasRepository.findByUniqueIdentifierIsNull();
         allKeyAliases.stream().filter(keyAlias -> ((Objects.isNull(keyAlias.getUniqueIdentifier()) || 
                                                     keyAlias.getUniqueIdentifier().equals(KeymanagerConstant.EMPTY)) && 
-                                                    !keyAlias.getApplicationId().equals(KeymanagerConstant.KERNEL_APP_ID) &&
+                                                    !keyAlias.getApplicationId().equals(signApplicationId) &&
                                                     !keyAlias.getReferenceId().equals(KeymanagerConstant.KERNEL_IDENTIFY_CACHE)))
                                 .forEach(keyAlias -> {
                                     try {
                                         if (keyAlias.getReferenceId().isEmpty() || 
-                                            (keyAlias.getApplicationId().equals(KeymanagerConstant.KERNEL_APP_ID) &&
+                                            (keyAlias.getApplicationId().equals(signApplicationId) &&
                                                 keyAlias.getReferenceId().equals(signRefId))) {
                                             String uniqueValue = keyAlias.getApplicationId() + KeymanagerConstant.UNDER_SCORE + 
                                                     keyAlias.getReferenceId() + KeymanagerConstant.UNDER_SCORE +
@@ -404,7 +407,11 @@ public class KeymanagerDBHelper {
                                                 uniqueValue += keyPolicy.isPresent() ? 
                                                                 keyAlias.getKeyGenerationTime().format(KeymanagerConstant.DATE_FORMATTER) :
                                                                 keyAlias.getCertThumbprint();
-                                                    String uniqueIdentifier = keymanagerUtil.getUniqueIdentifier(uniqueValue);
+                                                if (signApplicationId.equals(KeymanagerConstant.KERNEL_APP_ID) && 
+                                                            keyAlias.getApplicationId().equals(KeymanagerConstant.IDA_APP_ID)) {
+                                                    uniqueValue += keyAlias.getAlias();
+                                                }        
+                                                String uniqueIdentifier = keymanagerUtil.getUniqueIdentifier(uniqueValue);
                                                 storeKeyInAlias(keyAlias.getApplicationId(), keyAlias.getKeyGenerationTime(), 
                                                     keyAlias.getReferenceId(), keyAlias.getAlias(), keyAlias.getKeyExpiryTime(), 
                                                     keyAlias.getCertThumbprint(), uniqueIdentifier);
