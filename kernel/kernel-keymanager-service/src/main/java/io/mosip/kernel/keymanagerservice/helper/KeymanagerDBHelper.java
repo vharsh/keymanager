@@ -332,9 +332,7 @@ public class KeymanagerDBHelper {
     private synchronized void addCertificateThumbprints() {
         List<KeyAlias> allKeyAliases = keyAliasRepository.findByCertThumbprintIsNull();
         allKeyAliases.stream().filter(keyAlias -> ((Objects.isNull(keyAlias.getCertThumbprint()) || 
-                                                    keyAlias.getCertThumbprint().equals(KeymanagerConstant.EMPTY)) && 
-                                                    !keyAlias.getApplicationId().equals(signApplicationId) &&
-                                                    !keyAlias.getReferenceId().equals(KeymanagerConstant.KERNEL_IDENTIFY_CACHE)))
+                                                    keyAlias.getCertThumbprint().equals(KeymanagerConstant.EMPTY))))
                                 .forEach(keyAlias -> {
                                     try {
                                         if (keyAlias.getReferenceId().isEmpty() || 
@@ -348,6 +346,8 @@ public class KeymanagerDBHelper {
                                             String certThumbprint = cryptomanagerUtil.getCertificateThumbprintInHex(x509Cert);
                                             storeKeyInAlias(keyAlias.getApplicationId(), keyAlias.getKeyGenerationTime(), keyAlias.getReferenceId(), 
                                                 keyAlias.getAlias(), keyAlias.getKeyExpiryTime(), certThumbprint, uniqueIdentifier);
+                                            LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
+                                                "Thumbprint added for the key alias: " + keyAlias.getAlias());
                                         }
                                         if (!keyAlias.getReferenceId().isEmpty()){
                                             Optional<io.mosip.kernel.keymanagerservice.entity.KeyStore> keyFromDBStore = 
@@ -366,10 +366,10 @@ public class KeymanagerDBHelper {
                                                 storeKeyInAlias(keyAlias.getApplicationId(), keyAlias.getKeyGenerationTime(), 
                                                     keyAlias.getReferenceId(), keyAlias.getAlias(), keyAlias.getKeyExpiryTime(), 
                                                     certThumbprint, uniqueIdentifier);
+                                                LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
+                                                    "Thumbprint added for the key alias: " + keyAlias.getAlias());
                                             }
                                         }
-                                        LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
-                                            "Thumbprint added for the key alias: " + keyAlias.getAlias());
                                     } catch(Throwable t) {
                                         // May be unique constraint exception from DB
                                         LOGGER.debug(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
@@ -382,9 +382,7 @@ public class KeymanagerDBHelper {
     private synchronized void addKeyUniqueIdentifier() {
         List<KeyAlias> allKeyAliases = keyAliasRepository.findByUniqueIdentifierIsNull();
         allKeyAliases.stream().filter(keyAlias -> ((Objects.isNull(keyAlias.getUniqueIdentifier()) || 
-                                                    keyAlias.getUniqueIdentifier().equals(KeymanagerConstant.EMPTY)) && 
-                                                    !keyAlias.getApplicationId().equals(signApplicationId) &&
-                                                    !keyAlias.getReferenceId().equals(KeymanagerConstant.KERNEL_IDENTIFY_CACHE)))
+                                                    keyAlias.getUniqueIdentifier().equals(KeymanagerConstant.EMPTY))))
                                 .forEach(keyAlias -> {
                                     try {
                                         if (keyAlias.getReferenceId().isEmpty() || 
@@ -396,6 +394,8 @@ public class KeymanagerDBHelper {
                                             String uniqueIdentifier = keymanagerUtil.getUniqueIdentifier(uniqueValue);
                                             storeKeyInAlias(keyAlias.getApplicationId(), keyAlias.getKeyGenerationTime(), keyAlias.getReferenceId(), 
                                                 keyAlias.getAlias(), keyAlias.getKeyExpiryTime(), keyAlias.getCertThumbprint(), uniqueIdentifier);
+                                            LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
+                                                "Unique Identifier added for the key alias: " + keyAlias.getAlias());
                                         }
                                         if (!keyAlias.getReferenceId().isEmpty()){
                                             Optional<io.mosip.kernel.keymanagerservice.entity.KeyStore> keyFromDBStore = 
@@ -408,17 +408,18 @@ public class KeymanagerDBHelper {
                                                                 keyAlias.getKeyGenerationTime().format(KeymanagerConstant.DATE_FORMATTER) :
                                                                 keyAlias.getCertThumbprint();
                                                 if (signApplicationId.equals(KeymanagerConstant.KERNEL_APP_ID) && 
-                                                            keyAlias.getApplicationId().equals(KeymanagerConstant.IDA_APP_ID)) {
+                                                            (keyAlias.getApplicationId().equals(KeymanagerConstant.IDA_APP_ID) ||
+                                                            keyAlias.getApplicationId().equals(KeymanagerConstant.PARTNER_APP_ID))) {
                                                     uniqueValue += keyAlias.getAlias();
                                                 }        
                                                 String uniqueIdentifier = keymanagerUtil.getUniqueIdentifier(uniqueValue);
                                                 storeKeyInAlias(keyAlias.getApplicationId(), keyAlias.getKeyGenerationTime(), 
                                                     keyAlias.getReferenceId(), keyAlias.getAlias(), keyAlias.getKeyExpiryTime(), 
                                                     keyAlias.getCertThumbprint(), uniqueIdentifier);
+                                                LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
+                                                        "Unique Identifier added for the key alias: " + keyAlias.getAlias());
                                             }
                                         }
-                                        LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
-                                            "Unique Identifier added for the key alias: " + keyAlias.getAlias());
                                     } catch(Throwable t) {
                                         // May be unique constraint exception from DB
                                         LOGGER.debug(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
