@@ -159,13 +159,23 @@ public class ClientCryptoFacade {
     public byte[] decrypt(byte[] dataToDecrypt) {
         byte[] encryptedSecretKey = Arrays.copyOfRange(dataToDecrypt, 0, symmetricKeyLength);
         byte[] secretKeyBytes =  Objects.requireNonNull(getClientSecurity()).asymmetricDecrypt(encryptedSecretKey);
-        byte[] iv = Arrays.copyOfRange(dataToDecrypt, symmetricKeyLength, symmetricKeyLength+ivLength);
-        byte[] aad = Arrays.copyOfRange(dataToDecrypt, symmetricKeyLength + ivLength, symmetricKeyLength+ivLength+aadLength);
-        byte[] cipher = Arrays.copyOfRange(dataToDecrypt, symmetricKeyLength + ivLength + aadLength,
-                dataToDecrypt.length);
-
         SecretKey secretKey = new SecretKeySpec(secretKeyBytes, "AES");
-        return cryptoCore.symmetricDecrypt(secretKey, cipher, iv, aad);
+
+        try {
+            byte[] iv = Arrays.copyOfRange(dataToDecrypt, symmetricKeyLength, symmetricKeyLength + ivLength);
+            byte[] aad = Arrays.copyOfRange(dataToDecrypt, symmetricKeyLength + ivLength, symmetricKeyLength + ivLength + aadLength);
+            byte[] cipher = Arrays.copyOfRange(dataToDecrypt, symmetricKeyLength + ivLength + aadLength,
+                    dataToDecrypt.length);
+            return cryptoCore.symmetricDecrypt(secretKey, cipher, iv, aad);
+        } catch (Throwable t) {
+            LOGGER.error("Failed to decrypt the data due to : ", t.getMessage());
+            //1.1.4.4 backward compatibility code, for IV_LENGTH = 16 and AAD_LENGTH = 12;
+            byte[] iv = Arrays.copyOfRange(dataToDecrypt, symmetricKeyLength, symmetricKeyLength + 16);
+            byte[] aad = Arrays.copyOfRange(dataToDecrypt, symmetricKeyLength + 16, symmetricKeyLength + 16 + 12);
+            byte[] cipher = Arrays.copyOfRange(dataToDecrypt, symmetricKeyLength + 16 + 12,
+                    dataToDecrypt.length);
+            return cryptoCore.symmetricDecrypt(secretKey, cipher, iv, aad);
+        }
     }
 
     public static byte[] generateRandomBytes(int length) {
