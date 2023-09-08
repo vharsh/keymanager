@@ -281,7 +281,7 @@ public class KeymanagerDBHelper {
         if (keyAliases.isEmpty()) {
             // Still key not found after updating the thumbprints. So throwing exception.
             LOGGER.error(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
-                    "no key alias found for the provided thumbprint after updating the thumbprints in DB.");
+                    "no key alias found for the provided thumbprint after updating the thumbprints in DB. TP: " + certThumbprint);
             throw new KeymanagerServiceException(KeymanagerErrorConstant.KEY_NOT_FOUND_BY_THUMBPRINT.getErrorCode(),
                     KeymanagerErrorConstant.KEY_NOT_FOUND_BY_THUMBPRINT.getErrorMessage());
         }
@@ -332,7 +332,9 @@ public class KeymanagerDBHelper {
     private synchronized void addCertificateThumbprints() {
         List<KeyAlias> allKeyAliases = keyAliasRepository.findByCertThumbprintIsNull();
         allKeyAliases.stream().filter(keyAlias -> ((Objects.isNull(keyAlias.getCertThumbprint()) || 
-                                                    keyAlias.getCertThumbprint().equals(KeymanagerConstant.EMPTY))))
+                                                    keyAlias.getCertThumbprint().equals(KeymanagerConstant.EMPTY)) && 
+                                                    !keyAlias.getApplicationId().equals(signApplicationId) &&
+                                                    !keyAlias.getReferenceId().equals(KeymanagerConstant.KERNEL_IDENTIFY_CACHE)))
                                 .forEach(keyAlias -> {
                                     try {
                                         if (keyAlias.getReferenceId().isEmpty() || 
@@ -370,6 +372,7 @@ public class KeymanagerDBHelper {
                                                     "Thumbprint added for the key alias: " + keyAlias.getAlias());
                                             }
                                         }
+                                        
                                     } catch(Throwable t) {
                                         // May be unique constraint exception from DB
                                         LOGGER.debug(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
@@ -382,7 +385,9 @@ public class KeymanagerDBHelper {
     private synchronized void addKeyUniqueIdentifier() {
         List<KeyAlias> allKeyAliases = keyAliasRepository.findByUniqueIdentifierIsNull();
         allKeyAliases.stream().filter(keyAlias -> ((Objects.isNull(keyAlias.getUniqueIdentifier()) || 
-                                                    keyAlias.getUniqueIdentifier().equals(KeymanagerConstant.EMPTY))))
+                                                    keyAlias.getUniqueIdentifier().equals(KeymanagerConstant.EMPTY)) && 
+                                                    !keyAlias.getApplicationId().equals(signApplicationId) &&
+                                                    !keyAlias.getReferenceId().equals(KeymanagerConstant.KERNEL_IDENTIFY_CACHE)))
                                 .forEach(keyAlias -> {
                                     try {
                                         if (keyAlias.getReferenceId().isEmpty() || 
@@ -416,10 +421,10 @@ public class KeymanagerDBHelper {
                                                 storeKeyInAlias(keyAlias.getApplicationId(), keyAlias.getKeyGenerationTime(), 
                                                     keyAlias.getReferenceId(), keyAlias.getAlias(), keyAlias.getKeyExpiryTime(), 
                                                     keyAlias.getCertThumbprint(), uniqueIdentifier);
-                                                LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
-                                                        "Unique Identifier added for the key alias: " + keyAlias.getAlias());
                                             }
                                         }
+                                        LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
+                                            "Unique Identifier added for the key alias: " + keyAlias.getAlias());
                                     } catch(Throwable t) {
                                         // May be unique constraint exception from DB
                                         LOGGER.debug(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
@@ -435,7 +440,7 @@ public class KeymanagerDBHelper {
             return 0;
         }
         
-        if (referenceId.isEmpty() || (applicationId.equals(KeymanagerConstant.KERNEL_APP_ID) &&
+        if (referenceId.isEmpty() || (applicationId.equals(signApplicationId) &&
                         (referenceId.equals(signRefId) || referenceId.equals(KeymanagerConstant.KERNEL_IDENTIFY_CACHE)))) {
             // key policy details for component Master Key.
             return keyPolicy.get().getPreExpireDays();
