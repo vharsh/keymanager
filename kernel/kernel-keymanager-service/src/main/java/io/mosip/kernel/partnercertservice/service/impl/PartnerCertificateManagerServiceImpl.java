@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
 import org.cache2k.expiry.Expiry;
@@ -475,6 +476,14 @@ public class PartnerCertificateManagerServiceImpl implements PartnerCertificateM
         }
 
         String certOrgName = PartnerCertificateManagerUtil.getCertificateOrgName(reqX509Cert.getSubjectX500Principal());
+        if (certOrgName.equals(PartnerCertManagerConstants.EMPTY)) {
+            LOGGER.error(PartnerCertManagerConstants.SESSIONID, PartnerCertManagerConstants.UPLOAD_PARTNER_CERT,
+                    PartnerCertManagerConstants.EMPTY,
+                    "Partner Certificate Organization is not available/empty input certificate.");
+            throw new PartnerCertManagerException(PartnerCertManagerErrorConstants.PARTNER_ORG_NOT_MATCH.getErrorCode(),
+                    PartnerCertManagerErrorConstants.PARTNER_ORG_NOT_MATCH.getErrorMessage());
+        }
+
         if (!certOrgName.equals(reqOrgName)) {
             LOGGER.error(PartnerCertManagerConstants.SESSIONID, PartnerCertManagerConstants.UPLOAD_PARTNER_CERT,
                     PartnerCertManagerConstants.EMPTY,
