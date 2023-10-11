@@ -200,4 +200,8 @@ public class KeymanagerConstant {
 	public static final String COMPONENT_MASTER_KEY_DUMMY_REF = "COMP_MASTER";
 
 	public static final String ALL_GET_CERTIFICATES = "Request received to get all the Certificates";
+
+	public static final String DOT = ".";
+
+	public static final String COMMA = ",";
 }
