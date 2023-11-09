@@ -85,7 +85,7 @@ public class CryptomanagerServiceImpl implements CryptomanagerService {
 
 	private static final int AES_KEY_SIZE = 128;
 
-	private String AES_ECB_ALGO = "AES/ECB/PKC75Padding";
+	private String AES_ECB_ALGO = "AES/ECB/PKCS7Padding";
 
 	private static final Logger LOGGER = KeymanagerLogger.getLogger(CryptomanagerServiceImpl.class);
 
@@ -567,7 +567,7 @@ public class CryptomanagerServiceImpl implements CryptomanagerService {
 			SecretKey aesKey = (SecretKey) saltGenParamsCache.get(CryptomanagerConstant.CACHE_AES_KEY);
 			AtomicLong intCounter = (AtomicLong) saltGenParamsCache.get(CryptomanagerConstant.CACHE_INT_COUNTER);
 			long saltInput = intCounter.getAndIncrement();
-			saltGenParamsCache.put(CryptomanagerConstant.CACHE_INT_COUNTER, new AtomicLong(saltInput));
+			saltGenParamsCache.put(CryptomanagerConstant.CACHE_INT_COUNTER, intCounter);
 			saltBytes = getSaltBytes(getLongBytes(saltInput), aesKey);
 			saltData = CryptoUtil.encodeToURLSafeBase64(saltBytes);
 		} else {
