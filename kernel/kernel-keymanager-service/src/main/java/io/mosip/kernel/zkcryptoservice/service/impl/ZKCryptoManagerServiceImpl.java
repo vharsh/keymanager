@@ -96,9 +96,6 @@ public class ZKCryptoManagerServiceImpl implements ZKCryptoManagerService, Initi
     @Value("${mosip.kernel.zkcrypto.wrap.algorithm-name}")
 	private String aesECBTransformation;
 	
-	@Value("${mosip.kernel.zkcrypto.derive.encrypt.algorithm-name}")
-    private String aesECBPKCS5Transformation;
-
 	private List<KeyAlias> keyAliases = null;
         
     @Autowired
