@@ -603,7 +603,7 @@ public class CryptomanagerServiceImpl implements CryptomanagerService {
 		} catch(NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException
 			| IllegalBlockSizeException | BadPaddingException | IllegalArgumentException e) {
 			LOGGER.error(CryptomanagerConstant.SESSIONID, this.getClass().getSimpleName(), 
-						CryptomanagerConstant.GEN_ARGON2_HASH,	"Error generation of random salt.");
+						CryptomanagerConstant.GEN_ARGON2_HASH,	"Error generation of random salt.", e);
 		}
 		LOGGER.info(CryptomanagerConstant.SESSIONID, this.getClass().getSimpleName(), CryptomanagerConstant.GEN_ARGON2_HASH, 
 						"Generating Random Salt using Secure Random because encrypted random bytes failed.");
