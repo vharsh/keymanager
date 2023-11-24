@@ -27,6 +27,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
@@ -166,7 +167,7 @@ public class CryptomanagerServiceImpl implements CryptomanagerService {
 				javax.crypto.KeyGenerator keyGenerator = KeyGeneratorUtils.getKeyGenerator(AES_KEY_TYPE, AES_KEY_SIZE);
 				return keyGenerator.generateKey();
 			} else if (objectKey.equals(CryptomanagerConstant.CACHE_INT_COUNTER)) {
-				return new AtomicLong(System.currentTimeMillis());
+				return new AtomicLong(RandomUtils.nextLong());
 			} 
 			return null;
 		})
