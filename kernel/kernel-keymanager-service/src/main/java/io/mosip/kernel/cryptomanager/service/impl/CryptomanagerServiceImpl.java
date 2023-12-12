@@ -86,7 +86,7 @@ public class CryptomanagerServiceImpl implements CryptomanagerService {
 
 	private static final int AES_KEY_SIZE = 128;
 
-	private String AES_ECB_ALGO = "AES/ECB/PKCS7Padding";
+	private String AES_GCM_ALGO = "AES/GCM/NoPadding";
 
 	private static final Logger LOGGER = KeymanagerLogger.getLogger(CryptomanagerServiceImpl.class);
 
@@ -166,8 +166,11 @@ public class CryptomanagerServiceImpl implements CryptomanagerService {
 			if (objectKey.equals(CryptomanagerConstant.CACHE_AES_KEY)) {
 				javax.crypto.KeyGenerator keyGenerator = KeyGeneratorUtils.getKeyGenerator(AES_KEY_TYPE, AES_KEY_SIZE);
 				return keyGenerator.generateKey();
-			} else if (objectKey.equals(CryptomanagerConstant.CACHE_INT_COUNTER)) {
-				return new AtomicLong(RandomUtils.nextLong());
+			} else if (objectKey.equals(CACHE_INT_COUNTER)) {
+				if(secureRandom == null)
+            		secureRandom = new SecureRandom();
+				
+				return new AtomicLong(secureRandom.nextLong());
 			} 
 			return null;
 		})
@@ -598,7 +601,7 @@ public class CryptomanagerServiceImpl implements CryptomanagerService {
 
 	private byte[] getSaltBytes(byte[] randomBytes, SecretKey aesKey) {
 		try {
-			Cipher cipher = Cipher.getInstance(AES_ECB_ALGO);
+			Cipher cipher = Cipher.getInstance(AES_GCM_ALGO);
 			cipher.init(Cipher.ENCRYPT_MODE, aesKey);
 			return cipher.doFinal(randomBytes, 0, randomBytes.length);
 		} catch(NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException
