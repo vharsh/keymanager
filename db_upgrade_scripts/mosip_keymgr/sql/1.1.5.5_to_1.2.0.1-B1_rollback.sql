@@ -1,4 +1,8 @@
-\c mosip_keymgr sysadmin
+\c mosip_keymgr
+
+REASSIGN OWNED BY postgres TO sysadmin;
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA keymgr TO sysadmin;
 
 delete from keymgr.key_policy_def where app_id in ('ADMIN_SERVICES','RESIDENT','COMPLIANCE_TOOLKIT'); 
 

@@ -45,11 +45,10 @@ import io.mosip.kernel.keymanagerservice.util.KeymanagerUtil;
 public class KeymanagerDBHelper {
 
     private static final Logger LOGGER = KeymanagerLogger.getLogger(KeymanagerDBHelper.class);
-
-    /** The sign applicationid. */
-	@Value("${mosip.sign.applicationid:KERNEL}")
+    
+    @Value("${mosip.sign.applicationid:KERNEL}")
 	private String signApplicationId;
-
+    
     @Value("${mosip.sign-certificate-refid:SIGN}")
 	private String signRefId;
 
@@ -349,6 +348,8 @@ public class KeymanagerDBHelper {
                                             String certThumbprint = cryptomanagerUtil.getCertificateThumbprintInHex(x509Cert);
                                             storeKeyInAlias(keyAlias.getApplicationId(), keyAlias.getKeyGenerationTime(), keyAlias.getReferenceId(), 
                                                 keyAlias.getAlias(), keyAlias.getKeyExpiryTime(), certThumbprint, uniqueIdentifier);
+                                            LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
+                                                "Thumbprint added for the key alias: " + keyAlias.getAlias());
                                         }
                                         if (!keyAlias.getReferenceId().isEmpty()){
                                             Optional<io.mosip.kernel.keymanagerservice.entity.KeyStore> keyFromDBStore = 
@@ -367,10 +368,11 @@ public class KeymanagerDBHelper {
                                                 storeKeyInAlias(keyAlias.getApplicationId(), keyAlias.getKeyGenerationTime(), 
                                                     keyAlias.getReferenceId(), keyAlias.getAlias(), keyAlias.getKeyExpiryTime(), 
                                                     certThumbprint, uniqueIdentifier);
+                                                LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
+                                                    "Thumbprint added for the key alias: " + keyAlias.getAlias());
                                             }
                                         }
-                                        LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
-                                            "Thumbprint added for the key alias: " + keyAlias.getAlias());
+                                        
                                     } catch(Throwable t) {
                                         // May be unique constraint exception from DB
                                         LOGGER.debug(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
@@ -397,6 +399,8 @@ public class KeymanagerDBHelper {
                                             String uniqueIdentifier = keymanagerUtil.getUniqueIdentifier(uniqueValue);
                                             storeKeyInAlias(keyAlias.getApplicationId(), keyAlias.getKeyGenerationTime(), keyAlias.getReferenceId(), 
                                                 keyAlias.getAlias(), keyAlias.getKeyExpiryTime(), keyAlias.getCertThumbprint(), uniqueIdentifier);
+                                            LOGGER.info(KeymanagerConstant.SESSIONID, KeymanagerConstant.EMPTY, KeymanagerConstant.EMPTY,
+                                                "Unique Identifier added for the key alias: " + keyAlias.getAlias());
                                         }
                                         if (!keyAlias.getReferenceId().isEmpty()){
                                             Optional<io.mosip.kernel.keymanagerservice.entity.KeyStore> keyFromDBStore = 
@@ -408,7 +412,12 @@ public class KeymanagerDBHelper {
                                                 uniqueValue += keyPolicy.isPresent() ? 
                                                                 keyAlias.getKeyGenerationTime().format(KeymanagerConstant.DATE_FORMATTER) :
                                                                 keyAlias.getCertThumbprint();
-                                                    String uniqueIdentifier = keymanagerUtil.getUniqueIdentifier(uniqueValue);
+                                                if (signApplicationId.equals(KeymanagerConstant.KERNEL_APP_ID) && 
+                                                            (keyAlias.getApplicationId().equals(KeymanagerConstant.IDA_APP_ID) ||
+                                                            keyAlias.getApplicationId().equals(KeymanagerConstant.PARTNER_APP_ID))) {
+                                                    uniqueValue += keyAlias.getAlias();
+                                                }        
+                                                String uniqueIdentifier = keymanagerUtil.getUniqueIdentifier(uniqueValue);
                                                 storeKeyInAlias(keyAlias.getApplicationId(), keyAlias.getKeyGenerationTime(), 
                                                     keyAlias.getReferenceId(), keyAlias.getAlias(), keyAlias.getKeyExpiryTime(), 
                                                     keyAlias.getCertThumbprint(), uniqueIdentifier);

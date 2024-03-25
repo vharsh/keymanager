@@ -136,7 +136,6 @@
 		<micrometer.core.version>1.4.2</micrometer.core.version>
 		<micrometer.registry.prometheus.version>1.4.2</micrometer.registry.prometheus.version>
 		<kernel.core.version>1.2.1-SNAPSHOT</kernel.core.version>
-		<kernel.auth.adaptor.version>1.2.1-SNAPSHOT</kernel.auth.adaptor.version>
 		<kernel-dataaccess-hibernate.version>1.2.1-SNAPSHOT</kernel-dataaccess-hibernate.version>
 		<kernel.logger.logback.version>1.2.1-SNAPSHOT</kernel.logger.logback.version>
 		<kernel.pdfgenerator.itext.version>1.2.1-SNAPSHOT</kernel.pdfgenerator.itext.version>

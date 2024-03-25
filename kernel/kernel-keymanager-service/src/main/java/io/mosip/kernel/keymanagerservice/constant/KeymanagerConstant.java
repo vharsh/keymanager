@@ -204,4 +204,6 @@ public class KeymanagerConstant {
 	public static final String DOT = ".";
 
 	public static final String COMMA = ",";
+
+	public static final String IDA_APP_ID = "IDA";
 }
